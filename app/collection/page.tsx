@@ -5,34 +5,33 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useCollection, CATEGORY_DISPLAY, RARITY_DISPLAY } from '@/lib/hooks/use-collection'
 import { useAuth } from '@/lib/hooks/use-auth'
 import type { SpiritCategory, Rarity } from '@/lib/types/database'
 
-// Filter options
+// Sort options
 const SORT_OPTIONS = [
   { value: 'name', label: 'Name' },
   { value: 'proof', label: 'Proof' },
   { value: 'age', label: 'Age' },
   { value: 'rarity', label: 'Rarity' },
-  { value: 'collected', label: 'Recently Collected' },
 ]
 
 export default function CollectionPage() {
   const { user, profile, loading: authLoading } = useAuth()
   const {
+    items: collectionItems,
     spirits,
-    userCollection,
-    loading: collectionLoading,
+    isLoading: collectionLoading,
     error,
-    refreshSpirits,
+    stats,
+    fetchSpirits,
     addToCollection,
     removeFromCollection,
-    isInCollection,
-    getCollectionStats,
-  } = useCollection()
+    filterCollection,
+  } = useCollection(user?.id)
 
   const [selectedCategory, setSelectedCategory] = useState<SpiritCategory | 'all'>('all')
   const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>('all')
@@ -42,56 +41,79 @@ export default function CollectionPage() {
   const [showOnlyOwned, setShowOnlyOwned] = useState(false)
 
   const loading = authLoading || collectionLoading
-  const stats = getCollectionStats()
+
+  // Get collected spirit IDs for quick lookup
+  const collectedSpiritIds = useMemo(() => {
+    return new Set(collectionItems.map(item => item.spirit_id))
+  }, [collectionItems])
+
+  const isInCollection = (spiritId: string) => collectedSpiritIds.has(spiritId)
 
   // Filter and sort spirits
-  const filteredSpirits = spirits
-    .filter((spirit) => {
-      // Category filter
-      if (selectedCategory !== 'all' && spirit.category !== selectedCategory) return false
-      // Rarity filter
-      if (selectedRarity !== 'all' && spirit.rarity !== selectedRarity) return false
-      // Owned filter
-      if (showOnlyOwned && !isInCollection(spirit.id)) return false
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        return (
-          spirit.name.toLowerCase().includes(query) ||
-          spirit.distillery.toLowerCase().includes(query) ||
-          spirit.region?.toLowerCase().includes(query) ||
-          spirit.flavor_notes?.some((note) => note.toLowerCase().includes(query))
-        )
-      }
-      return true
-    })
-    .sort((a, b) => {
+  const filteredSpirits = useMemo(() => {
+    let result = [...spirits]
+
+    // Category filter
+    if (selectedCategory !== 'all') {
+      result = result.filter(spirit => spirit.category === selectedCategory)
+    }
+
+    // Rarity filter
+    if (selectedRarity !== 'all') {
+      result = result.filter(spirit => spirit.rarity === selectedRarity)
+    }
+
+    // Owned filter
+    if (showOnlyOwned) {
+      result = result.filter(spirit => isInCollection(spirit.id))
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(spirit =>
+        spirit.name.toLowerCase().includes(query) ||
+        spirit.distillery?.toLowerCase().includes(query) ||
+        spirit.region?.toLowerCase().includes(query) ||
+        spirit.flavor_notes?.some(note => note.toLowerCase().includes(query))
+      )
+    }
+
+    // Sort
+    result.sort((a, b) => {
       switch (sortBy) {
         case 'proof':
           return (b.proof || 0) - (a.proof || 0)
         case 'age':
           return (b.age_statement || 0) - (a.age_statement || 0)
         case 'rarity':
-          const rarityOrder = ['common', 'uncommon', 'rare', 'ultra_rare', 'legendary']
+          const rarityOrder = ['common', 'uncommon', 'rare', 'very_rare', 'ultra_rare', 'legendary']
           return rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity)
-        case 'collected':
-          const aCollected = userCollection.find((c) => c.spirit_id === a.id)?.collected_at || ''
-          const bCollected = userCollection.find((c) => c.spirit_id === b.id)?.collected_at || ''
-          return bCollected.localeCompare(aCollected)
         default:
           return a.name.localeCompare(b.name)
       }
     })
 
+    return result
+  }, [spirits, selectedCategory, selectedRarity, showOnlyOwned, searchQuery, sortBy, collectedSpiritIds])
+
   const handleCollectionToggle = async (spiritId: string) => {
     if (!user) return
     
     if (isInCollection(spiritId)) {
-      await removeFromCollection(spiritId)
+      const item = collectionItems.find(i => i.spirit_id === spiritId)
+      if (item) {
+        await removeFromCollection(item.id)
+      }
     } else {
       await addToCollection(spiritId)
     }
   }
+
+  // Calculate completion percentage
+  const completionPercentage = spirits.length > 0 
+    ? Math.round((collectionItems.length / spirits.length) * 100) 
+    : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-900 via-amber-800 to-stone-900 text-white">
@@ -112,15 +134,15 @@ export default function CollectionPage() {
           {user && (
             <div className="flex gap-4 bg-stone-800/50 border border-amber-600/30 rounded-xl p-4">
               <div className="text-center px-4">
-                <div className="text-2xl font-bold text-amber-400">{stats.owned}</div>
+                <div className="text-2xl font-bold text-amber-400">{stats.uniqueSpirits}</div>
                 <div className="text-xs text-stone-400">Collected</div>
               </div>
               <div className="text-center px-4 border-l border-stone-700">
-                <div className="text-2xl font-bold text-white">{stats.total}</div>
+                <div className="text-2xl font-bold text-white">{spirits.length}</div>
                 <div className="text-xs text-stone-400">Total</div>
               </div>
               <div className="text-center px-4 border-l border-stone-700">
-                <div className="text-2xl font-bold text-green-400">{stats.percentage}%</div>
+                <div className="text-2xl font-bold text-green-400">{completionPercentage}%</div>
                 <div className="text-xs text-stone-400">Complete</div>
               </div>
             </div>
@@ -137,7 +159,7 @@ export default function CollectionPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, distillery, region, or flavor..."
+                placeholder="Search by name, distillery, region..."
                 className="w-full bg-stone-900 border border-amber-600/30 rounded-lg px-4 py-2 text-white placeholder-stone-500 focus:border-amber-500 focus:outline-none"
               />
             </div>
@@ -153,7 +175,7 @@ export default function CollectionPage() {
                 <option value="all">All Categories</option>
                 {Object.entries(CATEGORY_DISPLAY).map(([key, info]) => (
                   <option key={key} value={key}>
-                    {info.icon} {info.name}
+                    {info.icon} {info.label}
                   </option>
                 ))}
               </select>
@@ -170,7 +192,7 @@ export default function CollectionPage() {
                 <option value="all">All Rarities</option>
                 {Object.entries(RARITY_DISPLAY).map(([key, info]) => (
                   <option key={key} value={key}>
-                    {info.icon} {info.name}
+                    {info.label}
                   </option>
                 ))}
               </select>
@@ -237,9 +259,9 @@ export default function CollectionPage() {
         {/* Error State */}
         {error && (
           <div className="bg-red-900/30 border border-red-600 rounded-xl p-6 mb-8 text-center">
-            <p className="text-red-300 mb-4">{error}</p>
+            <p className="text-red-300 mb-4">{error.message}</p>
             <button
-              onClick={refreshSpirits}
+              onClick={() => fetchSpirits()}
               className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors"
             >
               Retry
@@ -272,22 +294,22 @@ export default function CollectionPage() {
                   }`}
                 >
                   {/* Image Placeholder */}
-                  <div className={`h-48 bg-gradient-to-br ${rarityInfo?.bgGradient || 'from-stone-700 to-stone-800'} flex items-center justify-center relative`}>
+                  <div className="h-48 bg-gradient-to-br from-stone-700 to-stone-800 flex items-center justify-center relative">
                     <span className="text-6xl">{categoryInfo?.icon || '🥃'}</span>
                     {owned && (
                       <div className="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded text-xs font-bold">
                         ✓ OWNED
                       </div>
                     )}
-                    <div className={`absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold ${rarityInfo?.bgColor || 'bg-stone-600'}`}>
-                      {rarityInfo?.icon} {rarityInfo?.name}
+                    <div className={`absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold text-white ${rarityInfo?.bgClass || 'bg-stone-600'}`}>
+                      {rarityInfo?.label}
                     </div>
                   </div>
 
                   {/* Details */}
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1 truncate">{spirit.name}</h3>
-                    <p className="text-stone-400 text-sm mb-2">{spirit.distillery}</p>
+                    <p className="text-stone-400 text-sm mb-2">{spirit.distillery || spirit.brand}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-3 text-xs">
                       {spirit.proof && (
@@ -358,7 +380,7 @@ export default function CollectionPage() {
                   }`}
                 >
                   {/* Icon */}
-                  <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${rarityInfo?.bgGradient || 'from-stone-700 to-stone-800'} flex items-center justify-center shrink-0`}>
+                  <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-stone-700 to-stone-800 flex items-center justify-center shrink-0">
                     <span className="text-3xl">{categoryInfo?.icon || '🥃'}</span>
                   </div>
 
@@ -372,10 +394,10 @@ export default function CollectionPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-stone-400 text-sm">{spirit.distillery}</p>
+                    <p className="text-stone-400 text-sm">{spirit.distillery || spirit.brand}</p>
                     <div className="flex flex-wrap gap-2 mt-1 text-xs">
-                      <span className={`px-2 py-0.5 rounded ${rarityInfo?.bgColor || 'bg-stone-600'}`}>
-                        {rarityInfo?.name}
+                      <span className={`px-2 py-0.5 rounded text-white ${rarityInfo?.bgClass || 'bg-stone-600'}`}>
+                        {rarityInfo?.label}
                       </span>
                       {spirit.proof && <span className="text-stone-400">{spirit.proof}°</span>}
                       {spirit.age_statement && <span className="text-stone-400">{spirit.age_statement}yr</span>}
