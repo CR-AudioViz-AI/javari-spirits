@@ -1,8 +1,9 @@
 // app/collection/page.tsx
 // BarrelVerse Collection Page - REAL Database Integration
 
-'use client'
+export const dynamic = 'force-dynamic'
 
+'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCollection, CATEGORY_DISPLAY, RARITY_DISPLAY } from '@/lib/hooks/use-collection'
