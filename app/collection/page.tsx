@@ -19,6 +19,17 @@ const SORT_OPTIONS = [
   { value: 'rarity', label: 'Rarity' },
 ]
 
+// Helper to safely get tasting notes as array
+function getTastingNotes(spirit: { tasting_notes: unknown }): string[] {
+  if (!spirit.tasting_notes) return []
+  if (Array.isArray(spirit.tasting_notes)) return spirit.tasting_notes as string[]
+  if (typeof spirit.tasting_notes === 'object') {
+    const notes = spirit.tasting_notes as Record<string, unknown>
+    return Object.values(notes).filter((v): v is string => typeof v === 'string')
+  }
+  return []
+}
+
 export default function CollectionPage() {
   const { user, profile, loading: authLoading } = useAuth()
   const {
@@ -30,7 +41,6 @@ export default function CollectionPage() {
     fetchSpirits,
     addToCollection,
     removeFromCollection,
-    filterCollection,
   } = useCollection(user?.id)
 
   const [selectedCategory, setSelectedCategory] = useState<SpiritCategory | 'all'>('all')
@@ -71,12 +81,15 @@ export default function CollectionPage() {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      result = result.filter(spirit =>
-        spirit.name.toLowerCase().includes(query) ||
-        spirit.distillery?.toLowerCase().includes(query) ||
-        spirit.region?.toLowerCase().includes(query) ||
-        spirit.flavor_notes?.some(note => note.toLowerCase().includes(query))
-      )
+      result = result.filter(spirit => {
+        const notes = getTastingNotes(spirit)
+        return (
+          spirit.name.toLowerCase().includes(query) ||
+          spirit.distillery?.toLowerCase().includes(query) ||
+          spirit.region?.toLowerCase().includes(query) ||
+          notes.some(note => note.toLowerCase().includes(query))
+        )
+      })
     }
 
     // Sort
@@ -85,7 +98,9 @@ export default function CollectionPage() {
         case 'proof':
           return (b.proof || 0) - (a.proof || 0)
         case 'age':
-          return (b.age_statement || 0) - (a.age_statement || 0)
+          const ageA = parseInt(a.age_statement || '0') || 0
+          const ageB = parseInt(b.age_statement || '0') || 0
+          return ageB - ageA
         case 'rarity':
           const rarityOrder = ['common', 'uncommon', 'rare', 'very_rare', 'ultra_rare', 'legendary']
           return rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity)
@@ -285,6 +300,7 @@ export default function CollectionPage() {
               const owned = isInCollection(spirit.id)
               const rarityInfo = RARITY_DISPLAY[spirit.rarity]
               const categoryInfo = CATEGORY_DISPLAY[spirit.category]
+              const notes = getTastingNotes(spirit)
 
               return (
                 <div
@@ -316,23 +332,23 @@ export default function CollectionPage() {
                         <span className="bg-stone-700 px-2 py-1 rounded">{spirit.proof}° Proof</span>
                       )}
                       {spirit.age_statement && (
-                        <span className="bg-stone-700 px-2 py-1 rounded">{spirit.age_statement} Years</span>
+                        <span className="bg-stone-700 px-2 py-1 rounded">{spirit.age_statement}</span>
                       )}
                       {spirit.region && (
                         <span className="bg-stone-700 px-2 py-1 rounded">{spirit.region}</span>
                       )}
                     </div>
 
-                    {/* Flavor Notes */}
-                    {spirit.flavor_notes && spirit.flavor_notes.length > 0 && (
+                    {/* Tasting Notes */}
+                    {notes.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {spirit.flavor_notes.slice(0, 3).map((note, idx) => (
+                        {notes.slice(0, 3).map((note, idx) => (
                           <span key={idx} className="text-xs bg-amber-600/20 text-amber-300 px-2 py-0.5 rounded">
                             {note}
                           </span>
                         ))}
-                        {spirit.flavor_notes.length > 3 && (
-                          <span className="text-xs text-stone-500">+{spirit.flavor_notes.length - 3}</span>
+                        {notes.length > 3 && (
+                          <span className="text-xs text-stone-500">+{notes.length - 3}</span>
                         )}
                       </div>
                     )}
@@ -400,7 +416,7 @@ export default function CollectionPage() {
                         {rarityInfo?.label}
                       </span>
                       {spirit.proof && <span className="text-stone-400">{spirit.proof}°</span>}
-                      {spirit.age_statement && <span className="text-stone-400">{spirit.age_statement}yr</span>}
+                      {spirit.age_statement && <span className="text-stone-400">{spirit.age_statement}</span>}
                     </div>
                   </div>
 
