@@ -144,7 +144,7 @@ export default function GamesPage() {
     setShowResult(true)
 
     const startTime = Date.now()
-    await submitAnswer(currentQuestion.id, answer, Date.now() - startTime)
+    await submitAnswer(answer, Date.now() - startTime)
 
     setTimeout(() => {
       setSelectedAnswer(null)
