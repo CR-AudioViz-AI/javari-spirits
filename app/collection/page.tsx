@@ -89,8 +89,8 @@ function CollectionContent() {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(spirit =>
         spirit.name.toLowerCase().includes(query) ||
-        spirit.brand.toLowerCase().includes(query) ||
-        spirit.distillery?.toLowerCase().includes(query) ||
+        spirit.brand?.toLowerCase() || ''.includes(query) ||
+        spirit.distillery?.toLowerCase() || ''.includes(query) ||
         spirit.category.toLowerCase().includes(query) ||
         spirit.country?.toLowerCase().includes(query) ||
         spirit.region?.toLowerCase().includes(query)
