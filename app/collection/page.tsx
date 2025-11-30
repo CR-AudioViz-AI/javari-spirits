@@ -290,7 +290,7 @@ function CollectionContent() {
                   <div className="p-4">
                     {/* Badges */}
                     <div className="flex gap-2 mb-2">
-                      <span className={`px-2 py-0.5 rounded text-xs ${rarityInfo?.bgColor || 'bg-stone-600'} ${rarityInfo?.textColor || 'text-white'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs ${rarityInfo?.bgClass || 'bg-stone-600'} ${rarityInfo?.color || 'text-white'}`}>
                         {rarityInfo?.label}
                       </span>
                       {inCollection && (
@@ -358,7 +358,7 @@ function CollectionContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-bold truncate">{spirit.name}</h3>
-                      <span className={`px-2 py-0.5 rounded text-xs ${rarityInfo?.bgColor || 'bg-stone-600'} ${rarityInfo?.textColor || 'text-white'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs ${rarityInfo?.bgClass || 'bg-stone-600'} ${rarityInfo?.color || 'text-white'}`}>
                         {rarityInfo?.label}
                       </span>
                       {inCollection && (
