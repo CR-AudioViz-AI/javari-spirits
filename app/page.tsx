@@ -20,28 +20,24 @@ const FEATURES = [
     title: 'Trivia Games',
     description: '500+ questions across 4 game modes. Test your spirits knowledge!',
     link: '/games',
-    ready: true,
   },
   {
     icon: '📱',
     title: 'Spirit Collection',
     description: 'Browse 100+ premium spirits with detailed tasting notes',
     link: '/collection',
-    ready: true,
+  },
+  {
+    icon: '🔍',
+    title: 'Find Nearby',
+    description: 'Search for bottles at local bars, restaurants & liquor stores',
+    link: '/find',
   },
   {
     icon: '🏆',
     title: '$PROOF Rewards',
     description: 'Earn tokens and redeem for real merchandise and experiences',
     link: '/rewards',
-    ready: true,
-  },
-  {
-    icon: '📊',
-    title: 'Leaderboards',
-    description: 'Compete with other enthusiasts and climb the rankings',
-    link: '/leaderboard',
-    ready: true,
   },
 ]
 
@@ -83,7 +79,7 @@ export default function HomePage() {
     return (
       <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
         <div className="bg-stone-900 border border-amber-600/30 rounded-2xl max-w-md w-full p-8 text-center">
-          <span className="text-6xl mb-4 block">🥃</span>
+          <div className="text-6xl mb-4">🥃</div>
           <h1 className="text-2xl font-bold text-white mb-2">Welcome to BarrelVerse</h1>
           <p className="text-stone-300 mb-6">You must be of legal drinking age to access this site.</p>
           <div className="space-y-3">
@@ -100,9 +96,6 @@ export default function HomePage() {
               I am under 21 - Exit
             </button>
           </div>
-          <p className="text-xs text-stone-500 mt-4">
-            By entering, you agree to our Terms of Service and Privacy Policy
-          </p>
         </div>
       </div>
     )
@@ -110,84 +103,98 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900">
-      {/* Header */}
-      <header className="border-b border-amber-900/30">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl">🍾</span>
-              <span className="text-xl md:text-2xl font-bold text-white">BarrelVerse</span>
+      {/* Navigation */}
+      <nav className="sticky top-0 z-40 bg-stone-900/80 backdrop-blur-lg border-b border-amber-600/20">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-lg flex items-center justify-center text-2xl shadow-lg">
+              🥃
             </div>
-            <nav className="flex items-center gap-1 md:gap-2">
-              <Link href="/games" className="text-amber-300 hover:text-amber-200 text-sm md:text-base px-2 md:px-3 py-2">
-                Games
-              </Link>
-              <Link href="/collection" className="text-amber-300 hover:text-amber-200 text-sm md:text-base px-2 md:px-3 py-2 hidden sm:block">
-                Collection
-              </Link>
-              <Link href="/leaderboard" className="text-amber-300 hover:text-amber-200 text-sm md:text-base px-2 md:px-3 py-2 hidden sm:block">
-                Ranks
-              </Link>
-              <Link href="/auth/login" className="bg-amber-600 hover:bg-amber-700 text-white text-sm md:text-base px-3 md:px-4 py-2 rounded-lg transition-colors">
-                Sign In
-              </Link>
-            </nav>
+            <span className="text-xl font-bold text-white">
+              Barrel<span className="text-amber-400">Verse</span>
+            </span>
+          </Link>
+          
+          <div className="flex items-center gap-6">
+            <Link href="/games" className="text-stone-300 hover:text-amber-400 transition-colors hidden md:block">
+              Games
+            </Link>
+            <Link href="/collection" className="text-stone-300 hover:text-amber-400 transition-colors hidden md:block">
+              Collection
+            </Link>
+            <Link href="/find" className="text-stone-300 hover:text-amber-400 transition-colors hidden md:block">
+              Find Spirits
+            </Link>
+            <Link href="/leaderboard" className="text-stone-300 hover:text-amber-400 transition-colors hidden md:block">
+              Leaderboard
+            </Link>
+            <Link 
+              href="/auth/login" 
+              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              Sign In
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Hero */}
-      <section className="py-12 md:py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
-            Master the World of<br />
-            <span className="text-amber-400">Premium Spirits</span>
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/whiskey-bg.jpg')] bg-cover bg-center opacity-10" />
+        <div className="container mx-auto text-center relative">
+          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            Master the Art of
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600"> Fine Spirits</span>
           </h1>
-          <p className="text-lg md:text-xl text-stone-300 mb-8 max-w-2xl mx-auto px-4">
-            Play trivia, build your collection, earn $PROOF rewards, and compete on the leaderboard.
+          <p className="text-xl text-amber-200 mb-8 max-w-2xl mx-auto">
+            Test your knowledge, build your collection, and earn rewards in the ultimate spirits enthusiast platform.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-            <Link href="/games" className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl text-base md:text-lg transition-colors">
-              🎮 Play Trivia Now
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/games"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-amber-500/25 transition-all"
+            >
+              🎮 Play Trivia Games
             </Link>
-            <Link href="/collection" className="border border-amber-600 text-amber-400 hover:bg-amber-600/10 font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl text-base md:text-lg transition-colors">
+            <Link
+              href="/collection"
+              className="bg-stone-800 hover:bg-stone-700 text-amber-400 border border-amber-600/30 font-bold py-4 px-8 rounded-xl text-lg transition-all"
+            >
               📱 Browse Spirits
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-8 md:py-12 border-y border-amber-900/30 bg-stone-900/50">
+      {/* Stats Bar */}
+      <section className="bg-stone-800/50 border-y border-amber-600/20 py-8">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-4xl font-bold text-amber-400">{stat.value}</div>
-                <div className="text-stone-400 text-sm md:text-base">{stat.label}</div>
+              <div key={stat.label}>
+                <div className="text-3xl md:text-4xl font-bold text-amber-400">{stat.value}</div>
+                <div className="text-stone-400 text-sm">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-12 md:py-16 px-4">
+      {/* Categories - Links to Collection with Filter */}
+      <section className="py-16 px-4">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
-            Explore Spirit Categories
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
+          <h2 className="text-3xl font-bold text-white text-center mb-4">Explore Spirit Categories</h2>
+          <p className="text-stone-400 text-center mb-8">Click a category to browse all spirits of that type</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CATEGORIES.map((category) => (
               <Link
                 key={category.id}
                 href={`/collection?category=${category.id}`}
-                className="bg-stone-800/50 border border-amber-900/30 rounded-xl p-4 text-center hover:border-amber-600/50 hover:bg-stone-800 transition-all group"
+                className={`${category.color} hover:opacity-90 rounded-xl p-6 text-center text-white transition-all hover:scale-105 shadow-lg`}
               >
-                <span className="text-3xl md:text-4xl block mb-2">{category.icon}</span>
-                <span className="text-white text-sm md:text-base font-medium group-hover:text-amber-300 transition-colors">
-                  {category.name}
-                </span>
+                <span className="text-4xl block mb-2">{category.icon}</span>
+                <span className="font-semibold">{category.name}</span>
               </Link>
             ))}
           </div>
@@ -195,67 +202,70 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="py-12 md:py-16 px-4 bg-stone-900/50">
+      <section className="py-16 px-4 bg-stone-800/30">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
-            What You Can Do
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Everything You Need</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURES.map((feature) => (
               <Link
                 key={feature.title}
                 href={feature.link}
-                className="bg-stone-800/50 border border-amber-900/30 rounded-xl p-6 hover:border-amber-600/50 hover:bg-stone-800 transition-all block"
+                className="bg-stone-800/50 border border-amber-600/20 rounded-xl p-6 hover:border-amber-500/50 hover:bg-stone-800/70 transition-all group"
               >
-                <span className="text-4xl block mb-4">{feature.icon}</span>
-                <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-stone-400 text-sm mb-4">{feature.description}</p>
-                <span className="text-amber-400 hover:text-amber-300 text-sm font-medium">
-                  Get Started →
-                </span>
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-stone-400">{feature.description}</p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-12 md:py-16 px-4">
+      {/* CTA Section */}
+      <section className="py-20 px-4">
         <div className="container mx-auto">
           <div className="bg-gradient-to-r from-amber-900/50 to-amber-800/50 border border-amber-600/30 rounded-2xl p-8 md:p-12 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Ready to Test Your Knowledge?
-            </h2>
-            <p className="text-stone-300 mb-6 max-w-xl mx-auto">
-              Start playing trivia now and earn $PROOF tokens. No account required to play!
+            <h2 className="text-3xl font-bold text-white mb-4">Own a Bar or Liquor Store?</h2>
+            <p className="text-amber-200 mb-8 max-w-2xl mx-auto">
+              List your inventory and reach thousands of spirits enthusiasts actively searching for bottles near them.
             </p>
-            <Link href="/games" className="inline-block bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded-xl text-lg transition-colors">
-              Start Playing Free
+            <Link
+              href="/business/register"
+              className="inline-block bg-white text-amber-900 font-bold py-3 px-8 rounded-lg hover:bg-amber-100 transition-colors"
+            >
+              List Your Business Free →
             </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-amber-900/30 py-8 px-4">
+      <footer className="bg-stone-900 border-t border-amber-600/20 py-12 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🍾</span>
-              <span className="text-white font-bold">BarrelVerse</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-700 rounded-lg flex items-center justify-center text-xl">
+                🥃
+              </div>
+              <span className="text-lg font-bold text-white">
+                Barrel<span className="text-amber-400">Verse</span>
+              </span>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-stone-400 text-sm">
-              <Link href="/games" className="hover:text-amber-300">Games</Link>
-              <Link href="/collection" className="hover:text-amber-300">Collection</Link>
-              <Link href="/rewards" className="hover:text-amber-300">Rewards</Link>
-              <Link href="/leaderboard" className="hover:text-amber-300">Leaderboard</Link>
-              <Link href="/auth/login" className="hover:text-amber-300">Sign In</Link>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <Link href="/games" className="text-stone-400 hover:text-amber-400 transition-colors">Games</Link>
+              <Link href="/collection" className="text-stone-400 hover:text-amber-400 transition-colors">Collection</Link>
+              <Link href="/find" className="text-stone-400 hover:text-amber-400 transition-colors">Find Spirits</Link>
+              <Link href="/rewards" className="text-stone-400 hover:text-amber-400 transition-colors">Rewards</Link>
+              <Link href="/leaderboard" className="text-stone-400 hover:text-amber-400 transition-colors">Leaderboard</Link>
+              <Link href="/business/register" className="text-stone-400 hover:text-amber-400 transition-colors">For Business</Link>
+              <Link href="/auth/login" className="text-stone-400 hover:text-amber-400 transition-colors">Sign In</Link>
             </div>
-            <p className="text-stone-500 text-sm">© 2025 CR AudioViz AI</p>
           </div>
-          <p className="text-center text-stone-600 text-xs mt-4">
-            Please drink responsibly. Must be 21+ to use this site.
-          </p>
+          <div className="mt-8 pt-8 border-t border-stone-800 text-center text-stone-500 text-sm">
+            <p>© 2024 BarrelVerse. Drink responsibly. Must be 21+ to use this service.</p>
+          </div>
         </div>
       </footer>
     </div>
