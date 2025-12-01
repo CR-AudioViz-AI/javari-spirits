@@ -393,7 +393,7 @@ export default function GamesPage() {
           <div className="bg-stone-800/50 border border-amber-600/30 rounded-xl p-8 mb-6">
             <div className="flex justify-between items-start mb-4">
               <span className="px-3 py-1 rounded-full text-sm bg-stone-700 text-stone-300">{difficultyInfo?.label}</span>
-              <span className="text-amber-400 text-sm">+{currentQuestion.proof_reward * (mode?.multiplier || 1)} $PROOF</span>
+              <span className="text-amber-400 text-sm">+{(currentQuestion.proof_reward || 10) * (mode?.multiplier || 1)} $PROOF</span>
             </div>
             <h2 className="text-xl font-semibold">{currentQuestion.question}</h2>
           </div>
