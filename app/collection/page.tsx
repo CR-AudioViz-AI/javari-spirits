@@ -16,38 +16,13 @@ const SORT_OPTIONS = [
   { value: 'rarity', label: 'Rarity' },
 ]
 
-// Fixed: Handle Json type from Supabase properly
-function getTastingNotes(notes: unknown): string[] {
-  if (!notes) return []
-  if (Array.isArray(notes)) {
-    return notes.filter((n): n is string => typeof n === 'string')
-  }
-  if (typeof notes === 'object' && notes !== null) {
-    return Object.values(notes).filter((v): v is string => typeof v === 'string')
-  }
-  if (typeof notes === 'string') {
-    try {
-      const parsed = JSON.parse(notes)
-      if (Array.isArray(parsed)) {
-        return parsed.filter((n): n is string => typeof n === 'string')
-      }
-    } catch {
-      return [notes]
-    }
-  }
-  return []
-}
-
 function CollectionContent() {
   const searchParams = useSearchParams()
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const {
     items: collectionItems,
     spirits,
     isLoading: collectionLoading,
-    error,
-    stats,
-    fetchSpirits,
     addToCollection,
     removeFromCollection,
   } = useCollection(user?.id)
@@ -57,7 +32,6 @@ function CollectionContent() {
   const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>('all')
   const [sortBy, setSortBy] = useState('name')
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showOnlyOwned, setShowOnlyOwned] = useState(false)
   const [selectedSpirit, setSelectedSpirit] = useState<typeof spirits[0] | null>(null)
 
@@ -94,12 +68,12 @@ function CollectionContent() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(spirit => {
-        const name = spirit.name?.toLowerCase() || ''
-        const brand = spirit.brand?.toLowerCase() || ''
-        const distillery = spirit.distillery?.toLowerCase() || ''
-        const category = spirit.category?.toLowerCase() || ''
-        const country = spirit.country?.toLowerCase() || ''
-        const region = spirit.region?.toLowerCase() || ''
+        const name = (spirit.name || '').toLowerCase()
+        const brand = (spirit.brand || '').toLowerCase()
+        const distillery = (spirit.distillery || '').toLowerCase()
+        const category = (spirit.category || '').toLowerCase()
+        const country = (spirit.country || '').toLowerCase()
+        const region = (spirit.region || '').toLowerCase()
         
         return name.includes(query) ||
           brand.includes(query) ||
@@ -118,9 +92,10 @@ function CollectionContent() {
           return (Number(b.proof) || 0) - (Number(a.proof) || 0)
         case 'age':
           return (Number(b.age_statement) || 0) - (Number(a.age_statement) || 0)
-        case 'rarity':
+        case 'rarity': {
           const rarityOrder = ['common', 'uncommon', 'rare', 'very_rare', 'ultra_rare', 'legendary']
           return rarityOrder.indexOf(b.rarity || 'common') - rarityOrder.indexOf(a.rarity || 'common')
+        }
         default:
           return 0
       }
@@ -141,10 +116,6 @@ function CollectionContent() {
     await removeFromCollection(spiritId)
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-  }
-
   const getRarityColor = (rarity: string | null | undefined) => {
     const colors: Record<string, string> = {
       common: 'bg-gray-500',
@@ -162,23 +133,19 @@ function CollectionContent() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <Link href="/" className="text-amber-300 hover:text-amber-200 text-sm">
-              ← Back to Home
-            </Link>
+            <Link href="/" className="text-amber-300 hover:text-amber-200 text-sm">← Back to Home</Link>
             <h1 className="text-3xl font-bold mt-2">Spirit Collection</h1>
             <p className="text-stone-400">Browse {spirits.length} premium spirits</p>
           </div>
           {user && (
-            <div className="flex items-center gap-4">
-              <div className="bg-stone-800/50 border border-amber-600/30 rounded-lg px-4 py-2">
-                <span className="text-stone-400 text-sm">Your Collection: </span>
-                <span className="text-amber-400 font-bold">{collectionItems.length} bottles</span>
-              </div>
+            <div className="bg-stone-800/50 border border-amber-600/30 rounded-lg px-4 py-2">
+              <span className="text-stone-400 text-sm">Your Collection: </span>
+              <span className="text-amber-400 font-bold">{collectionItems.length} bottles</span>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleSearch} className="mb-6">
+        <div className="mb-6">
           <div className="flex gap-2">
             <input
               type="text"
@@ -187,14 +154,9 @@ function CollectionContent() {
               placeholder="Search spirits by name, brand, distillery, country..."
               className="flex-1 px-4 py-3 bg-stone-800 border border-amber-600/30 rounded-lg text-white placeholder-stone-400 focus:outline-none focus:border-amber-500"
             />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold transition-colors"
-            >
-              🔍 Search
-            </button>
+            <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold">🔍 Search</button>
           </div>
-        </form>
+        </div>
 
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex-1 min-w-[200px]">
@@ -242,11 +204,7 @@ function CollectionContent() {
             <div className="flex items-end">
               <button
                 onClick={() => setShowOnlyOwned(!showOnlyOwned)}
-                className={`px-4 py-2 rounded-lg border transition-colors ${
-                  showOnlyOwned 
-                    ? 'bg-amber-600 border-amber-500' 
-                    : 'bg-stone-800 border-stone-600 hover:border-amber-600'
-                }`}
+                className={`px-4 py-2 rounded-lg border ${showOnlyOwned ? 'bg-amber-600 border-amber-500' : 'bg-stone-800 border-stone-600 hover:border-amber-600'}`}
               >
                 {showOnlyOwned ? '✓ My Collection' : 'My Collection'}
               </button>
@@ -260,41 +218,27 @@ function CollectionContent() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin text-5xl">🥃</div>
-          </div>
+          <div className="flex justify-center py-20"><div className="animate-spin text-5xl">🥃</div></div>
         ) : filteredSpirits.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
             <p className="text-xl text-stone-400">No spirits found</p>
-            <p className="text-stone-500 mt-2">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredSpirits.map((spirit) => {
               const inCollection = isInCollection(spirit.id)
-              const notes = getTastingNotes(spirit.tasting_notes)
-
               return (
                 <div
                   key={spirit.id}
-                  className={`bg-stone-800/50 border rounded-xl overflow-hidden hover:border-amber-500/50 transition-all cursor-pointer ${
-                    inCollection ? 'border-amber-500/50' : 'border-amber-600/20'
-                  }`}
+                  className={`bg-stone-800/50 border rounded-xl overflow-hidden hover:border-amber-500/50 cursor-pointer ${inCollection ? 'border-amber-500/50' : 'border-amber-600/20'}`}
                   onClick={() => setSelectedSpirit(spirit)}
                 >
                   <div className="h-32 bg-gradient-to-br from-stone-700 to-stone-800 flex items-center justify-center text-5xl relative">
                     🥃
-                    {inCollection && (
-                      <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1">
-                        <span className="text-sm">✓</span>
-                      </div>
-                    )}
-                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs ${getRarityColor(spirit.rarity)}`}>
-                      {spirit.rarity || 'common'}
-                    </div>
+                    {inCollection && <div className="absolute top-2 right-2 bg-amber-600 rounded-full p-1"><span className="text-sm">✓</span></div>}
+                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs ${getRarityColor(spirit.rarity)}`}>{spirit.rarity || 'common'}</div>
                   </div>
-
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1 truncate">{spirit.name}</h3>
                     <p className="text-stone-400 text-sm mb-2">{spirit.brand || 'Unknown'}</p>
@@ -302,15 +246,6 @@ function CollectionContent() {
                       <span className="text-amber-400">{spirit.proof || 0}° • {spirit.category}</span>
                       {spirit.msrp && <span className="text-stone-500">${spirit.msrp}</span>}
                     </div>
-                    {notes.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {notes.slice(0, 3).map((note, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-stone-700 rounded text-xs text-stone-300">
-                            {note}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               )
@@ -329,78 +264,21 @@ function CollectionContent() {
                   </div>
                   <button onClick={() => setSelectedSpirit(null)} className="text-stone-400 hover:text-white text-2xl">×</button>
                 </div>
-
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-stone-400 text-sm">Category</p>
-                      <p className="font-semibold">{selectedSpirit.category}</p>
-                    </div>
-                    <div>
-                      <p className="text-stone-400 text-sm">Proof</p>
-                      <p className="font-semibold">{selectedSpirit.proof || 0}° ({selectedSpirit.abv || 0}% ABV)</p>
-                    </div>
-                    {selectedSpirit.age_statement && (
-                      <div>
-                        <p className="text-stone-400 text-sm">Age</p>
-                        <p className="font-semibold">{selectedSpirit.age_statement} years</p>
-                      </div>
-                    )}
-                    {selectedSpirit.distillery && (
-                      <div>
-                        <p className="text-stone-400 text-sm">Distillery</p>
-                        <p className="font-semibold">{selectedSpirit.distillery}</p>
-                      </div>
-                    )}
-                    {selectedSpirit.country && (
-                      <div>
-                        <p className="text-stone-400 text-sm">Origin</p>
-                        <p className="font-semibold">{selectedSpirit.region ? `${selectedSpirit.region}, ` : ''}{selectedSpirit.country}</p>
-                      </div>
-                    )}
-                    {selectedSpirit.msrp && (
-                      <div>
-                        <p className="text-stone-400 text-sm">MSRP</p>
-                        <p className="font-semibold text-amber-400">${selectedSpirit.msrp}</p>
-                      </div>
-                    )}
+                    <div><p className="text-stone-400 text-sm">Category</p><p className="font-semibold">{selectedSpirit.category}</p></div>
+                    <div><p className="text-stone-400 text-sm">Proof</p><p className="font-semibold">{selectedSpirit.proof || 0}° ({selectedSpirit.abv || 0}% ABV)</p></div>
+                    {selectedSpirit.age_statement && <div><p className="text-stone-400 text-sm">Age</p><p className="font-semibold">{selectedSpirit.age_statement} years</p></div>}
+                    {selectedSpirit.distillery && <div><p className="text-stone-400 text-sm">Distillery</p><p className="font-semibold">{selectedSpirit.distillery}</p></div>}
+                    {selectedSpirit.country && <div><p className="text-stone-400 text-sm">Origin</p><p className="font-semibold">{selectedSpirit.region ? `${selectedSpirit.region}, ` : ''}{selectedSpirit.country}</p></div>}
+                    {selectedSpirit.msrp && <div><p className="text-stone-400 text-sm">MSRP</p><p className="font-semibold text-amber-400">${selectedSpirit.msrp}</p></div>}
                   </div>
-
-                  {selectedSpirit.description && (
-                    <div>
-                      <p className="text-stone-400 text-sm mb-1">Description</p>
-                      <p className="text-stone-200">{selectedSpirit.description}</p>
-                    </div>
-                  )}
-
-                  {getTastingNotes(selectedSpirit.tasting_notes).length > 0 && (
-                    <div>
-                      <p className="text-stone-400 text-sm mb-2">Tasting Notes</p>
-                      <div className="flex flex-wrap gap-2">
-                        {getTastingNotes(selectedSpirit.tasting_notes).map((note, i) => (
-                          <span key={i} className="px-3 py-1 bg-amber-600/20 border border-amber-600/30 rounded-full text-sm">
-                            {note}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
+                  {selectedSpirit.description && <div><p className="text-stone-400 text-sm mb-1">Description</p><p className="text-stone-200">{selectedSpirit.description}</p></div>}
                   <div className="pt-4 border-t border-stone-700">
                     {isInCollection(selectedSpirit.id) ? (
-                      <button
-                        onClick={() => handleRemoveFromCollection(selectedSpirit.id)}
-                        className="w-full py-3 bg-red-600/20 border border-red-600 text-red-400 rounded-lg hover:bg-red-600/30"
-                      >
-                        Remove from Collection
-                      </button>
+                      <button onClick={() => handleRemoveFromCollection(selectedSpirit.id)} className="w-full py-3 bg-red-600/20 border border-red-600 text-red-400 rounded-lg hover:bg-red-600/30">Remove from Collection</button>
                     ) : (
-                      <button
-                        onClick={() => handleAddToCollection(selectedSpirit.id)}
-                        className="w-full py-3 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold"
-                      >
-                        + Add to My Collection
-                      </button>
+                      <button onClick={() => handleAddToCollection(selectedSpirit.id)} className="w-full py-3 bg-amber-600 hover:bg-amber-700 rounded-lg font-semibold">+ Add to My Collection</button>
                     )}
                   </div>
                 </div>
@@ -415,11 +293,7 @@ function CollectionContent() {
 
 export default function CollectionPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 text-white flex items-center justify-center">
-        <div className="animate-spin text-5xl">🥃</div>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 text-white flex items-center justify-center"><div className="animate-spin text-5xl">🥃</div></div>}>
       <CollectionContent />
     </Suspense>
   )
