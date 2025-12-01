@@ -16,12 +16,24 @@ const SORT_OPTIONS = [
   { value: 'rarity', label: 'Rarity' },
 ]
 
-function getTastingNotes(spirit: { tasting_notes: unknown }): string[] {
-  if (!spirit.tasting_notes) return []
-  if (Array.isArray(spirit.tasting_notes)) return spirit.tasting_notes as string[]
-  if (typeof spirit.tasting_notes === 'object') {
-    const notes = spirit.tasting_notes as Record<string, unknown>
+// Fixed: Handle Json type from Supabase properly
+function getTastingNotes(notes: unknown): string[] {
+  if (!notes) return []
+  if (Array.isArray(notes)) {
+    return notes.filter((n): n is string => typeof n === 'string')
+  }
+  if (typeof notes === 'object' && notes !== null) {
     return Object.values(notes).filter((v): v is string => typeof v === 'string')
+  }
+  if (typeof notes === 'string') {
+    try {
+      const parsed = JSON.parse(notes)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((n): n is string => typeof n === 'string')
+      }
+    } catch {
+      return [notes]
+    }
   }
   return []
 }
@@ -79,7 +91,6 @@ function CollectionContent() {
       result = result.filter(spirit => isInCollection(spirit.id))
     }
 
-    // Search filter - FIXED SYNTAX
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(spirit => {
@@ -99,7 +110,6 @@ function CollectionContent() {
       })
     }
 
-    // Sorting - FIXED TYPE SAFETY
     result.sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -135,7 +145,7 @@ function CollectionContent() {
     e.preventDefault()
   }
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityColor = (rarity: string | null | undefined) => {
     const colors: Record<string, string> = {
       common: 'bg-gray-500',
       uncommon: 'bg-green-500',
@@ -144,7 +154,7 @@ function CollectionContent() {
       ultra_rare: 'bg-orange-500',
       legendary: 'bg-yellow-500',
     }
-    return colors[rarity] || 'bg-gray-500'
+    return colors[rarity || 'common'] || 'bg-gray-500'
   }
 
   return (
@@ -263,7 +273,7 @@ function CollectionContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredSpirits.map((spirit) => {
               const inCollection = isInCollection(spirit.id)
-              const notes = getTastingNotes(spirit)
+              const notes = getTastingNotes(spirit.tasting_notes)
 
               return (
                 <div
@@ -280,8 +290,8 @@ function CollectionContent() {
                         <span className="text-sm">✓</span>
                       </div>
                     )}
-                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs ${getRarityColor(spirit.rarity || 'common')}`}>
-                      {spirit.rarity}
+                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-xs ${getRarityColor(spirit.rarity)}`}>
+                      {spirit.rarity || 'common'}
                     </div>
                   </div>
 
@@ -289,7 +299,7 @@ function CollectionContent() {
                     <h3 className="font-bold text-lg mb-1 truncate">{spirit.name}</h3>
                     <p className="text-stone-400 text-sm mb-2">{spirit.brand || 'Unknown'}</p>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-amber-400">{spirit.proof}° • {spirit.category}</span>
+                      <span className="text-amber-400">{spirit.proof || 0}° • {spirit.category}</span>
                       {spirit.msrp && <span className="text-stone-500">${spirit.msrp}</span>}
                     </div>
                     {notes.length > 0 && (
@@ -328,7 +338,7 @@ function CollectionContent() {
                     </div>
                     <div>
                       <p className="text-stone-400 text-sm">Proof</p>
-                      <p className="font-semibold">{selectedSpirit.proof}° ({selectedSpirit.abv}% ABV)</p>
+                      <p className="font-semibold">{selectedSpirit.proof || 0}° ({selectedSpirit.abv || 0}% ABV)</p>
                     </div>
                     {selectedSpirit.age_statement && (
                       <div>
@@ -363,11 +373,11 @@ function CollectionContent() {
                     </div>
                   )}
 
-                  {getTastingNotes(selectedSpirit).length > 0 && (
+                  {getTastingNotes(selectedSpirit.tasting_notes).length > 0 && (
                     <div>
                       <p className="text-stone-400 text-sm mb-2">Tasting Notes</p>
                       <div className="flex flex-wrap gap-2">
-                        {getTastingNotes(selectedSpirit).map((note, i) => (
+                        {getTastingNotes(selectedSpirit.tasting_notes).map((note, i) => (
                           <span key={i} className="px-3 py-1 bg-amber-600/20 border border-amber-600/30 rounded-full text-sm">
                             {note}
                           </span>
