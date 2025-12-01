@@ -124,7 +124,7 @@ export function useTrivia() {
           wrongAnswers = question.wrong_answers.split(',').map((a: string) => a.trim())
         }
       } else if (Array.isArray(question.wrong_answers)) {
-        wrongAnswers = question.wrong_answers
+        wrongAnswers = (question.wrong_answers as string[]).filter((a): a is string => typeof a === "string")
       } else {
         wrongAnswers = []
       }
