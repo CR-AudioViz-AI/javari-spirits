@@ -25,6 +25,20 @@ const FEATURES = [
   { icon: '📊', title: 'Leaderboards', desc: 'Compete globally' },
 ]
 
+// Calculate user level from proof balance
+function calculateLevel(proofBalance: number): number {
+  if (proofBalance < 100) return 1
+  if (proofBalance < 500) return 2
+  if (proofBalance < 1000) return 3
+  if (proofBalance < 2500) return 4
+  if (proofBalance < 5000) return 5
+  if (proofBalance < 10000) return 6
+  if (proofBalance < 25000) return 7
+  if (proofBalance < 50000) return 8
+  if (proofBalance < 100000) return 9
+  return 10 + Math.floor((proofBalance - 100000) / 50000)
+}
+
 export default function HomePage() {
   const { user, profile, loading } = useAuth()
   const [stats, setStats] = useState({ spirits: 0, trivia: 0, courses: 0, users: 0 })
@@ -34,7 +48,6 @@ export default function HomePage() {
 
   useEffect(() => {
     async function fetchStats() {
-      // Get counts
       const [spiritsRes, triviaRes, coursesRes] = await Promise.all([
         supabase.from('bv_spirits').select('id', { count: 'exact', head: true }),
         supabase.from('bv_trivia_questions').select('id', { count: 'exact', head: true }),
@@ -45,10 +58,9 @@ export default function HomePage() {
         spirits: spiritsRes.count || 0,
         trivia: triviaRes.count || 0,
         courses: coursesRes.count || 0,
-        users: 1000, // Placeholder
+        users: 1000,
       })
 
-      // Get recent/featured spirits
       const { data: spirits } = await supabase
         .from('bv_spirits')
         .select('id, name, brand, category, proof, rarity, msrp')
@@ -72,6 +84,8 @@ export default function HomePage() {
     }
     return colors[rarity] || 'text-gray-400'
   }
+
+  const userLevel = profile ? calculateLevel(profile.proof_balance || 0) : 1
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 text-white">
@@ -110,7 +124,7 @@ export default function HomePage() {
               ) : user ? (
                 <div className="flex items-center gap-4">
                   <div className="text-right hidden sm:block">
-                    <div className="text-sm text-stone-400">Level {profile?.level || 1}</div>
+                    <div className="text-sm text-stone-400">Level {userLevel}</div>
                     <div className="text-amber-400 font-bold">{profile?.proof_balance || 0} $PROOF</div>
                   </div>
                   <Link
