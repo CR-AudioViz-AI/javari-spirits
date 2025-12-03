@@ -748,48 +748,15 @@ export async function runMassiveExpansion(): Promise<Record<string, any>> {
   return results;
 }
 
+
 // ============================================
 // 8. CRON SCHEDULE (Vercel)
 // ============================================
-/*
-Add to vercel.json for CONTINUOUS expansion:
-
-{
-  "crons": [
-    {
-      "path": "/api/cron/massive-expansion",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/spirits-expansion",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/trivia-expansion",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/history-expansion",
-      "schedule": "0 14 * * *"
-    },
-    {
-      "path": "/api/cron/knowledge-expansion",
-      "schedule": "0 20 * * *"
-    }
-  ]
-}
-
-This runs:
-- Massive expansion every 6 hours (4x/day)
-- Spirits at 2 AM
-- Trivia at 8 AM
-- History at 2 PM
-- Knowledge at 8 PM
-
-= CONTINUOUS 24/7 EXPANSION
-= 1000+ new items per day
-= Living, breathing alcohol museum
-*/
+// See vercel.json for cron configuration
+// Runs massive-expansion every 6 hours (4x/day)
+// = CONTINUOUS 24/7 EXPANSION
+// = 1000+ new items per day
+// = Living, breathing alcohol museum
 
 export {
   generateMassiveSpirits,
