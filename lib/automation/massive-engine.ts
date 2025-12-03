@@ -3,18 +3,29 @@
 // Goal: 1,000+ new items per day, continuous growth
 // The Living, Breathing Alcohol Museum
 // ============================================
-// Timestamp: 2025-12-03 2:00 AM EST
+// Timestamp: 2025-12-03 12:45 PM EST
 // ============================================
 
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
-const supabase = createClient(
+// Lazy-load Supabase client to avoid build-time errors
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy-load OpenAI client to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+const getOpenAI = () => {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is required');
+    }
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+};
 
 // ============================================
 // SCALE TARGETS (Per Day)
@@ -231,7 +242,7 @@ Return JSON array with these fields for each:
 
 Return ONLY valid JSON array, no markdown.`;
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAI().chat.completions.create({
           model: 'gpt-4-turbo-preview',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.8,
@@ -248,7 +259,7 @@ Return ONLY valid JSON array, no markdown.`;
             .single();
 
           if (!existing) {
-            await supabase.from('bv_spirits').insert({
+            await getSupabase().from('bv_spirits').insert({
               ...spirit,
               category,
             });
@@ -308,7 +319,7 @@ Return JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
@@ -324,7 +335,7 @@ Return JSON:
       .single();
 
     if (!existing && article.title) {
-      await supabase.from('bv_history_articles').insert({
+      await getSupabase().from('bv_history_articles').insert({
         ...article,
         category,
         author: 'BarrelVerse History Team',
@@ -385,7 +396,7 @@ Return JSON array:
 Make questions engaging and educational. Avoid simple yes/no questions.`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.9,
@@ -402,7 +413,7 @@ Make questions engaging and educational. Avoid simple yes/no questions.`;
           .single();
 
         if (!existing) {
-          await supabase.from('bv_trivia_questions').insert(q);
+          await getSupabase().from('bv_trivia_questions').insert(q);
           totalAdded++;
         }
       }
@@ -483,7 +494,7 @@ Return JSON:
 }`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
@@ -499,7 +510,7 @@ Return JSON:
         .single();
 
       if (!existing && entry.topic) {
-        await supabase.from('bv_knowledge_base').insert({
+        await getSupabase().from('bv_knowledge_base').insert({
           ...entry,
           source: 'Javari AI',
           is_verified: true,
@@ -560,7 +571,7 @@ Return JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
@@ -591,7 +602,7 @@ Return JSON:
 
       if (newCourse && course.lessons) {
         for (const lesson of course.lessons) {
-          await supabase.from('bv_lessons').insert({
+          await getSupabase().from('bv_lessons').insert({
             course_id: newCourse.id,
             ...lesson,
           });
@@ -638,7 +649,7 @@ Return JSON array:
 }]`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
@@ -656,7 +667,7 @@ Return JSON array:
         .single();
 
       if (!existing) {
-        await supabase.from('bv_cocktail_recipes').insert(recipe);
+        await getSupabase().from('bv_cocktail_recipes').insert(recipe);
         added++;
       }
     }
@@ -732,7 +743,7 @@ export async function runMassiveExpansion(): Promise<Record<string, any>> {
   // Log completion
   results.duration_ms = Date.now() - startTime;
   
-  await supabase.from('bv_auto_imports').insert({
+  await getSupabase().from('bv_auto_imports').insert({
     source: 'massive-expansion',
     import_type: 'all',
     status: 'completed',
