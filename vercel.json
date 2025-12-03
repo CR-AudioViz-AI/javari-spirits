@@ -5,8 +5,9 @@
   },
   "crons": [
     {
-      "path": "/api/cron/massive-expansion",
+      "path": "/api/cron/massive-expansion", 
       "schedule": "0 */6 * * *"
     }
-  ]
+  ],
+  "buildCommand": "next build"
 }
