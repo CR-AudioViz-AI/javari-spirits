@@ -1,10 +1,71 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 
+// Type definitions for proper TypeScript support
+interface Artifact {
+  name: string
+  year: number | string
+  description: string
+}
+
+interface ProcessStep {
+  step: number
+  title: string
+  description: string
+}
+
+interface TimelineEvent {
+  year: number
+  event: string
+}
+
+interface Tasting {
+  name: string
+  age: string
+  notes: string
+}
+
+interface Feature {
+  name: string
+  description: string
+}
+
+interface Exclusive {
+  name: string
+  description: string
+}
+
+interface Room {
+  id: string
+  name: string
+  icon: string
+  description: string
+  ambiance: string
+  artifacts?: Artifact[]
+  funFact?: string
+  sounds?: string[]
+  nextRooms: string[]
+  process?: ProcessStep[]
+  timeline?: TimelineEvent[]
+  tastings?: Tasting[]
+  features?: Feature[]
+  exclusives?: Exclusive[]
+}
+
+interface Distillery {
+  name: string
+  location: string
+  founded: number
+  tagline: string
+  atmosphere: string
+  famousFor: string[]
+  rooms: Room[]
+}
+
 // Virtual Distillery Tours
-const DISTILLERY_TOURS = {
+const DISTILLERY_TOURS: Record<string, Distillery> = {
   'buffalo-trace': {
     name: 'Buffalo Trace Distillery',
     location: 'Frankfort, Kentucky',
@@ -236,7 +297,7 @@ export default function DistilleryTourPage() {
   const [showMap, setShowMap] = useState(false)
   const [ambientMode, setAmbientMode] = useState(true)
 
-  const distillery = DISTILLERY_TOURS[selectedDistillery as keyof typeof DISTILLERY_TOURS]
+  const distillery = DISTILLERY_TOURS[selectedDistillery]
   const room = distillery?.rooms.find(r => r.id === currentRoom)
 
   const navigateToRoom = (roomId: string) => {
@@ -275,7 +336,7 @@ export default function DistilleryTourPage() {
       {/* Distillery Selector */}
       <div className="bg-stone-800/50 border-b border-stone-700/50 py-4">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <span className="text-gray-400">Select Distillery:</span>
             {Object.entries(DISTILLERY_TOURS).map(([id, d]) => (
               <button
@@ -313,7 +374,7 @@ export default function DistilleryTourPage() {
                 style={{ width: `${tourProgress}%` }}
               />
             </div>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               {distillery.rooms.map((r) => (
                 <div
                   key={r.id}
@@ -348,17 +409,18 @@ export default function DistilleryTourPage() {
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-6">
                     <div>
-                      <div className="text-6xl mb-4">{room.icon}</div>
-                      <h1 className="text-4xl font-bold mb-2">{room.name}</h1>
-                      <p className="text-amber-400">{distillery.name}</p>
+                      <div className="text-5xl mb-4">{room.icon}</div>
+                      <h1 className="text-3xl font-bold mb-2">{room.name}</h1>
                     </div>
-                    <div className="text-right">
-                      <span className="bg-amber-600 px-3 py-1 rounded-full text-sm">Room {distillery.rooms.findIndex(r => r.id === room.id) + 1} of {distillery.rooms.length}</span>
-                    </div>
+                    {visitedRooms.includes(room.id) && room.id !== 'entrance' && (
+                      <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+                        ✓ Visited
+                      </div>
+                    )}
                   </div>
 
                   {/* Description */}
-                  <p className="text-xl text-gray-200 mb-6 italic">"{room.description}"</p>
+                  <p className="text-xl text-gray-200 mb-6 italic">&quot;{room.description}&quot;</p>
 
                   {/* Ambiance */}
                   {ambientMode && room.ambiance && (
@@ -367,8 +429,8 @@ export default function DistilleryTourPage() {
                         <span>🎧</span>
                         <span className="italic">{room.ambiance}</span>
                       </p>
-                      {room.sounds && (
-                        <div className="flex gap-2 mt-3">
+                      {room.sounds && room.sounds.length > 0 && (
+                        <div className="flex gap-2 mt-3 flex-wrap">
                           {room.sounds.map((sound, i) => (
                             <span key={i} className="bg-stone-700/50 px-2 py-1 rounded text-xs text-gray-400">
                               🔊 {sound}
@@ -380,7 +442,7 @@ export default function DistilleryTourPage() {
                   )}
 
                   {/* Process Steps (if any) */}
-                  {room.process && (
+                  {room.process && room.process.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-bold mb-4 flex items-center gap-2">
                         <span>⚙️</span> The Process
@@ -400,7 +462,7 @@ export default function DistilleryTourPage() {
                   )}
 
                   {/* Timeline (if any) */}
-                  {room.timeline && (
+                  {room.timeline && room.timeline.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-bold mb-4 flex items-center gap-2">
                         <span>📅</span> Timeline
@@ -417,7 +479,7 @@ export default function DistilleryTourPage() {
                   )}
 
                   {/* Tastings (if any) */}
-                  {room.tastings && (
+                  {room.tastings && room.tastings.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-bold mb-4 flex items-center gap-2">
                         <span>🥃</span> Available Tastings
@@ -478,7 +540,7 @@ export default function DistilleryTourPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Artifacts */}
-              {room.artifacts && (
+              {room.artifacts && room.artifacts.length > 0 && (
                 <div className="bg-stone-800/50 rounded-2xl p-6 border border-amber-900/30">
                   <h3 className="font-bold mb-4 flex items-center gap-2">
                     <span>🖼️</span> Artifacts in This Room
@@ -526,7 +588,7 @@ export default function DistilleryTourPage() {
               <div className="bg-gradient-to-br from-amber-900/30 to-stone-800/30 rounded-2xl p-6 border border-amber-500/30 text-center">
                 <div className="text-4xl mb-3">📸</div>
                 <h3 className="font-bold mb-2">Share Your Tour</h3>
-                <p className="text-sm text-gray-400 mb-4">Let friends know you're exploring {distillery.name}!</p>
+                <p className="text-sm text-gray-400 mb-4">Let friends know you&apos;re exploring {distillery.name}!</p>
                 <button className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-semibold transition-colors">
                   Share on Twitter
                 </button>
@@ -537,7 +599,7 @@ export default function DistilleryTourPage() {
                 <div className="bg-gradient-to-br from-yellow-900/50 to-amber-900/50 rounded-2xl p-6 border border-yellow-500/50 text-center">
                   <div className="text-5xl mb-3">🏆</div>
                   <h3 className="font-bold text-xl mb-2">Tour Complete!</h3>
-                  <p className="text-gray-400 text-sm mb-4">You've explored all of {distillery.name}</p>
+                  <p className="text-gray-400 text-sm mb-4">You&apos;ve explored all of {distillery.name}</p>
                   <div className="bg-yellow-600 text-black py-2 rounded-lg font-bold">
                     +100 XP Earned!
                   </div>
