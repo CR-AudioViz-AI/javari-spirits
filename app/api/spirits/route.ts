@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Use service role key to bypass RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { createAdminClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,6 +9,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
+
+    // Use admin client to bypass RLS
+    const supabase = createAdminClient()
 
     let query = supabase
       .from('bv_spirits')
@@ -34,7 +31,7 @@ export async function GET(request: NextRequest) {
     query = query.range(offset, offset + limit - 1)
     
     // Order by rating desc
-    query = query.order('rating', { ascending: false })
+    query = query.order('rating', { ascending: false, nullsFirst: false })
 
     const { data, error, count } = await query
 
@@ -50,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     const categoryCounts: Record<string, number> = {}
     if (allSpirits) {
-      allSpirits.forEach(spirit => {
+      allSpirits.forEach((spirit: { category: string }) => {
         const cat = spirit.category || 'other'
         categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
       })
