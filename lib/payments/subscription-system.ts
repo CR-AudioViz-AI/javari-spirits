@@ -178,7 +178,7 @@ export async function createSubscriptionCheckout(
 ): Promise<string> {
   const tier = PRICING_TIERS[tierId.toUpperCase() as keyof typeof PRICING_TIERS];
   
-  if (!tier || !tier.stripePriceId) {
+  if (!tier || !("stripePriceId" in tier) || !tier.stripePriceId) {
     throw new Error(`Invalid tier: ${tierId}`);
   }
 
@@ -189,7 +189,7 @@ export async function createSubscriptionCheckout(
     payment_method_types: ['card'],
     line_items: [
       {
-        price: tier.stripePriceId,
+        price: (tier as any).stripePriceId,
         quantity: 1,
       },
     ],
