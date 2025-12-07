@@ -12,11 +12,31 @@
  * - notify: Send notifications about content
  * 
  * CR AudioViz AI, LLC - BarrelVerse
- * Timestamp: 2025-12-05
+ * Timestamp: 2025-12-06 - TypeScript fix
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+
+// Type definitions
+interface ScheduledContent {
+  id: string
+  content_type: string
+  content_id: string
+  action: string
+  scheduled_for: string
+  payload: Record<string, unknown>
+  status: string
+  executed_at?: string
+}
+
+interface ScheduledContentInput {
+  content_type: string
+  content_id: string
+  action: string
+  scheduled_for: string
+  payload?: Record<string, unknown>
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const supabase: any = createClient(
@@ -54,8 +74,8 @@ export async function GET(request: NextRequest) {
     if (error) throw error
 
     // Group by date for calendar view
-    const byDate: Record<string, any[]> = {}
-    data?.forEach(item => {
+    const byDate: Record<string, ScheduledContent[]> = {}
+    data?.forEach((item: ScheduledContent) => {
       const date = item.scheduled_for.split('T')[0]
       if (!byDate[date]) byDate[date] = []
       byDate[date].push(item)
@@ -80,7 +100,7 @@ export async function GET(request: NextRequest) {
 // POST - Schedule new content action
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body: ScheduledContentInput = await request.json()
     
     const scheduled = {
       content_type: body.content_type,
@@ -138,7 +158,7 @@ export async function PATCH(request: NextRequest) {
       if (fetchError) throw fetchError
 
       // Execute based on action type
-      const result = await executeScheduledAction(scheduled)
+      const result = await executeScheduledAction(scheduled as ScheduledContent)
 
       // Update status
       const { error: updateError } = await supabase
@@ -159,7 +179,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Regular update
-    const updates: Record<string, any> = {}
+    const updates: Partial<ScheduledContent> = {}
     if (body.scheduled_for) updates.scheduled_for = body.scheduled_for
     if (body.action) updates.action = body.action
     if (body.payload) updates.payload = body.payload
@@ -225,7 +245,7 @@ export async function DELETE(request: NextRequest) {
 }
 
 // Helper: Execute a scheduled action
-async function executeScheduledAction(scheduled: any) {
+async function executeScheduledAction(scheduled: ScheduledContent) {
   const { content_type, content_id, action, payload } = scheduled
 
   try {
