@@ -1,6 +1,5 @@
 // app/api/prices/route.ts
 // PRICE TRACKING AND MARKET DATA AGGREGATION
-// Free APIs: Wine-Searcher scraping fallback, community pricing, historical tracking
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -10,65 +9,28 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Price sources configuration
-const PRICE_SOURCES = {
-  // Community-reported prices
-  community: true,
-  // Historical price tracking
-  historical: true,
-  // Retail price estimates based on category/age
-  estimates: true,
-};
-
-// Price estimation based on spirit characteristics
 function estimatePrice(spirit: any): { low: number; mid: number; high: number } {
   const baseByCategory: Record<string, number> = {
-    bourbon: 35,
-    scotch: 55,
-    "single malt": 70,
-    rye: 40,
-    irish: 35,
-    japanese: 85,
-    cognac: 65,
-    rum: 30,
-    tequila: 40,
-    mezcal: 50,
-    gin: 30,
-    vodka: 25,
-    wine: 20,
-    beer: 12,
+    bourbon: 35, scotch: 55, "single malt": 70, rye: 40, irish: 35,
+    japanese: 85, cognac: 65, rum: 30, tequila: 40, mezcal: 50,
+    gin: 30, vodka: 25, wine: 20, beer: 12,
   };
 
   const category = (spirit.category || spirit.type || "").toLowerCase();
   let base = 40;
-
   for (const [key, value] of Object.entries(baseByCategory)) {
-    if (category.includes(key)) {
-      base = value;
-      break;
-    }
+    if (category.includes(key)) { base = value; break; }
   }
 
-  // Adjust for age statement
   const ageMatch = spirit.name?.match(/(\d+)\s*(?:year|yr|yo)/i);
-  if (ageMatch) {
-    const age = parseInt(ageMatch[1]);
-    base *= 1 + (age * 0.15);
-  }
+  if (ageMatch) base *= 1 + (parseInt(ageMatch[1]) * 0.15);
 
-  // Adjust for premium indicators
-  const premiumTerms = ["reserve", "limited", "special", "rare", "cask strength", "single barrel"];
+  const premiumTerms = ["reserve", "limited", "special", "rare", "cask strength"];
   for (const term of premiumTerms) {
-    if (spirit.name?.toLowerCase().includes(term)) {
-      base *= 1.4;
-      break;
-    }
+    if (spirit.name?.toLowerCase().includes(term)) { base *= 1.4; break; }
   }
 
-  // Adjust for proof/ABV
-  if (spirit.abv && spirit.abv > 50) {
-    base *= 1.2;
-  }
+  if (spirit.abv && spirit.abv > 50) base *= 1.2;
 
   return {
     low: Math.round(base * 0.7),
@@ -84,38 +46,26 @@ export async function GET(request: NextRequest) {
 
   try {
     if (action === "trending") {
-      // Get spirits with most price reports
       const { data, error } = await supabase
         .from("bv_price_reports")
         .select("spirit_id, price, reported_at, bv_spirits(name, brand, category)")
         .order("reported_at", { ascending: false })
         .limit(50);
-
       if (error) throw error;
-
-      return NextResponse.json({
-        success: true,
-        trending: data,
-      });
+      return NextResponse.json({ success: true, trending: data });
     }
 
     if (action === "alerts") {
-      // Price drop alerts
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("bv_price_alerts")
         .select("*, bv_spirits(name, brand)")
         .eq("triggered", false)
         .order("created_at", { ascending: false })
         .limit(20);
-
-      return NextResponse.json({
-        success: true,
-        alerts: data || [],
-      });
+      return NextResponse.json({ success: true, alerts: data || [] });
     }
 
     if (spiritId) {
-      // Get price history for specific spirit
       const { data: spirit } = await supabase
         .from("bv_spirits")
         .select("*")
@@ -126,7 +76,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Spirit not found" }, { status: 404 });
       }
 
-      // Get community price reports
       const { data: reports } = await supabase
         .from("bv_price_reports")
         .select("*")
@@ -134,34 +83,21 @@ export async function GET(request: NextRequest) {
         .order("reported_at", { ascending: false })
         .limit(50);
 
-      // Calculate statistics
       const prices = reports?.map((r) => r.price).filter(Boolean) || [];
-      const avgPrice = prices.length > 0 
-        ? prices.reduce((a, b) => a + b, 0) / prices.length 
-        : null;
-
+      const avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : null;
       const estimates = estimatePrice(spirit);
 
       return NextResponse.json({
         success: true,
-        spirit: {
-          id: spirit.id,
-          name: spirit.name,
-          brand: spirit.brand,
-        },
+        spirit: { id: spirit.id, name: spirit.name, brand: spirit.brand },
         pricing: {
-          community: {
-            average: avgPrice ? Math.round(avgPrice) : null,
-            reports: prices.length,
-            recent: reports?.slice(0, 5) || [],
-          },
+          community: { average: avgPrice ? Math.round(avgPrice) : null, reports: prices.length },
           estimates,
           recommendation: avgPrice || estimates.mid,
         },
       });
     }
 
-    // Default: return pricing overview
     return NextResponse.json({
       success: true,
       message: "Price Tracking API",
@@ -177,20 +113,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Report a price
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { spiritId, price, store, location, userId } = body;
 
     if (!spiritId || !price) {
-      return NextResponse.json(
-        { error: "Spirit ID and price required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Spirit ID and price required" }, { status: 400 });
     }
 
-    // Insert price report
     const { data, error } = await supabase
       .from("bv_price_reports")
       .insert({
@@ -206,12 +137,13 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    // Award proof points for reporting
+    // Award points - wrap in try-catch
     if (userId) {
-      await supabase.rpc("increment_proof_points", {
-        p_user_id: userId,
-        p_amount: 5,
-      }).catch(() => {});
+      try {
+        await supabase.rpc("increment_proof_points", { p_user_id: userId, p_amount: 5 });
+      } catch {
+        // Function may not exist
+      }
     }
 
     // Check for price alerts
@@ -222,7 +154,6 @@ export async function POST(request: NextRequest) {
       .lte("target_price", price)
       .eq("triggered", false);
 
-    // Trigger matching alerts
     if (alerts && alerts.length > 0) {
       await supabase
         .from("bv_price_alerts")
@@ -234,7 +165,6 @@ export async function POST(request: NextRequest) {
       success: true,
       report: data,
       alertsTriggered: alerts?.length || 0,
-      pointsEarned: userId ? 5 : 0,
     });
 
   } catch (error: any) {
