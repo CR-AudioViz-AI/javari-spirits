@@ -8,7 +8,7 @@ const footerLinks = {
     { label: 'Spirits Database', href: '/spirits' },
     { label: 'Distillery Map', href: '/distilleries' },
     { label: 'Barcode Scanner', href: '/scan' },
-    { label: 'AI Sommelier', href: '/sommelier' },
+    { label: 'AI Recommendations', href: '/explore' },
   ],
   learn: [
     { label: 'Academy', href: '/academy' },
@@ -20,7 +20,7 @@ const footerLinks = {
     { label: 'Games', href: '/games' },
     { label: 'Leaderboard', href: '/leaderboard' },
     { label: 'My Collection', href: '/collection' },
-    { label: 'Reviews', href: '/reviews' },
+    { label: 'Events', href: '/events' },
   ],
   platform: [
     { label: 'Javari AI', href: 'https://javariai.com', external: true },
