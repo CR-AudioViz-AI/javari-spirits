@@ -5,10 +5,10 @@ import Link from 'next/link'
 
 // Daily stats (would come from API)
 const LIVE_STATS = {
-  totalSpirits: 12847,
-  totalCollectors: 47823,
-  bottlesTracked: 234567,
-  collectionValue: 45000000
+  totalSpirits: 22951,
+  totalCollectors: 15234,
+  bottlesTracked: 89432,
+  collectionValue: 12500000
 }
 
 // Featured content
