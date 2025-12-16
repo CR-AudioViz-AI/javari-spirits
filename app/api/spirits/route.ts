@@ -7,25 +7,43 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Category image mapping for display
+// FIXED: Generic category images - NO branded products
 const categoryImages: Record<string, string> = {
-  bourbon: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
-  scotch: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400',
-  wine: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400',
-  beer: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400',
-  rum: 'https://images.unsplash.com/photo-1614313511387-1436a4480ebb?w=400',
-  tequila: 'https://images.unsplash.com/photo-1516535794938-6063878f08cc?w=400',
-  vodka: 'https://images.unsplash.com/photo-1607622750671-6cd9a99eabd1?w=400',
-  gin: 'https://images.unsplash.com/photo-1608885898957-a559228e8749?w=400',
-  cognac: 'https://images.unsplash.com/photo-1619451050621-83cb7aada2d7?w=400',
-  brandy: 'https://images.unsplash.com/photo-1619451050621-83cb7aada2d7?w=400',
-  mezcal: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
-  sake: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400',
-  rye: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
-  irish: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400',
-  japanese: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400',
-  other: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400',
+  bourbon: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop',
+  scotch: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop',
+  wine: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=600&fit=crop',
+  beer: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=600&fit=crop',
+  rum: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&h=600&fit=crop',
+  tequila: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop',
+  vodka: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
+  gin: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
+  cognac: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop',
+  brandy: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop',
+  mezcal: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop',
+  sake: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=600&fit=crop',
+  rye: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop',
+  irish: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop',
+  japanese: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop',
+  other: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
 };
+
+// Bad image URLs to filter out (branded products like Johnnie Walker, Jose Cuervo)
+const BAD_IMAGE_PATTERNS = [
+  'photo-1569529465841',  // Johnnie Walker
+  'photo-1516535794938',  // Jose Cuervo
+];
+
+function getCleanImageUrl(spirit: any): string {
+  // Check if spirit has an image_url and if it's not a bad one
+  if (spirit.image_url) {
+    const isBadImage = BAD_IMAGE_PATTERNS.some(pattern => spirit.image_url.includes(pattern));
+    if (!isBadImage) {
+      return spirit.image_url;
+    }
+  }
+  // Fall back to category default
+  return categoryImages[spirit.category] || categoryImages.bourbon;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,11 +87,11 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    // Add fallback images for spirits without images
+    // Add fallback images for spirits - filter out bad branded images
     const spiritsWithImages = (spirits || []).map(spirit => ({
       ...spirit,
-      image_url: spirit.image_url || categoryImages[spirit.category] || categoryImages.bourbon,
-      thumbnail_url: spirit.thumbnail_url || categoryImages[spirit.category] || categoryImages.bourbon,
+      image_url: getCleanImageUrl(spirit),
+      thumbnail_url: getCleanImageUrl(spirit),
     }));
 
     // Get category counts
