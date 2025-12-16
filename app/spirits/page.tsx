@@ -22,24 +22,25 @@ interface Spirit {
 // FIXED: Generic spirit images that don't show branded products
 // Using images that show glasses, barrels, or generic bottles - NOT specific brands
 const SPIRIT_IMAGES: Record<string, string> = {
-  bourbon: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop', // Bourbon glass with ice
-  scotch: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop', // Whiskey in glass
-  whiskey: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop', // Same as bourbon
-  wine: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=600&fit=crop', // Wine glasses
-  beer: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=600&fit=crop', // Beer glass
-  rum: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&h=600&fit=crop', // Tropical cocktail
-  tequila: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop', // Lime/salt (tequila setup)
-  vodka: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop', // Clear spirits
-  gin: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop', // Clear spirits
-  cognac: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop', // Snifter glass
-  brandy: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop', // Snifter glass
-  mezcal: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop', // Same as tequila
-  sake: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=600&fit=crop', // Asian style
-  rye: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop', // Same as bourbon
-  irish: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop', // Whiskey glass
-  japanese: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=600&fit=crop', // Whiskey glass
-  other: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop', // Generic spirits
-  default: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop' // Bourbon as default
+  bourbon: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop',
+  scotch: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=600&fit=crop',
+  whiskey: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop',
+  wine: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=600&fit=crop',
+  beer: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=600&fit=crop',
+  rum: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&h=600&fit=crop',
+  tequila: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop',
+  vodka: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
+  gin: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=600&fit=crop',
+  cognac: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?w=400&h=600&fit=crop',
+  brandy: 'https://images.unsplash.com/photo-1619451334792-150fd785ee74?w=400&h=600&fit=crop',
+  mezcal: 'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=600&fit=crop',
+  sake: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=600&fit=crop',
+  rye: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop',
+  irish: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=600&fit=crop',
+  japanese: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=600&fit=crop',
+  liqueur: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
+  other: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=600&fit=crop',
+  default: 'https://images.unsplash.com/photo-1598018553943-93a4a78f1e08?w=400&h=600&fit=crop'
 }
 
 // Fallback featured spirits with real data
@@ -81,6 +82,7 @@ const CATEGORIES = [
   { id: 'vodka', name: 'Vodka', icon: '❄️', color: 'blue' },
   { id: 'gin', name: 'Gin', icon: '🍸', color: 'green' },
   { id: 'cognac', name: 'Cognac', icon: '🍇', color: 'purple' },
+  { id: 'other', name: 'Other', icon: '🍾', color: 'stone' },
 ]
 
 export default function SpiritsPage() {
