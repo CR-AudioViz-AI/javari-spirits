@@ -193,16 +193,16 @@ export async function GET(request: NextRequest) {
     });
     
     // Get image source breakdown
-    const { data: sourcesData } = await supabase
-      .from('bv_spirits')
-      .select('image_source')
-      .not('image_source', 'is', null);
-    
-    const sourceCount: Record<string, number> = {};
-    sourcesData?.forEach(s => {
-      const src = s.image_source || 'Unknown';
-      sourceCount[src] = (sourceCount[src] || 0) + 1;
-    });
+// REMOVED:     const { data: sourcesData } = await supabase
+// REMOVED:       .from('bv_spirits')
+// REMOVED:       .select('image_source')
+// REMOVED:       .not('image_source', 'is', null);
+// REMOVED:     
+// REMOVED:     const sourceCount: Record<string, number> = {}; // No image_source column in bv_spirits
+// REMOVED: // REMOVED:     sourcesData?.forEach(s => {
+// REMOVED: // REMOVED:       const src = s.image_source || 'Unknown';
+// REMOVED: // REMOVED:       sourceCount[src] = (sourceCount[src] || 0) + 1;
+// REMOVED:     });
     
     return NextResponse.json({
       status: 'ready',
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
     // Build query
     let query = supabase
       .from('bv_spirits')
-      .select('id, name, brand, category, image_url, upc')
+      .select('id, name, brand, category, image_url')
       .order('id', { ascending: true })
       .limit(batchLimit);
     
@@ -365,10 +365,7 @@ export async function POST(request: NextRequest) {
           const { error: updateError } = await supabase
             .from('bv_spirits')
             .update({
-              image_url: image.url,
-              image_source: image.source,
-              image_confidence: image.confidence,
-              image_updated_at: new Date().toISOString()
+              image_url: image.url
             })
             .eq('id', spirit.id);
           
