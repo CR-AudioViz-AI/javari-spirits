@@ -221,7 +221,7 @@ export async function GET(request: NextRequest) {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 15)
         .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {}),
-      imageSourceBreakdown: sourceCount,
+      imageSourceBreakdown: {}, // No image_source column in bv_spirits
       apiUsage: {
         endpoint: 'POST /api/admin/batch-images',
         parameters: {
