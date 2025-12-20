@@ -1,77 +1,12 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "github": {
+    "autoAlias": false
+  },
   "crons": [
     {
-      "path": "/api/cron?job=health",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron?job=hourly",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron?job=daily",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron?job=weekly",
-      "schedule": "0 4 * * 1"
-    },
-    {
-      "path": "/api/cron/content-generation",
+      "path": "/api/cron/process-images",
       "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/massive-expansion",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/autonomous?job=process_tasks",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/autonomous?job=scheduled_content",
-      "schedule": "*/30 * * * *"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/manifest.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "Service-Worker-Allowed",
-          "value": "/"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PATCH, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
     }
   ]
 }
