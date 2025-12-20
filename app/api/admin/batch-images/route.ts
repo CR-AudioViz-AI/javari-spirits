@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
     // Build query
     let query = supabase
       .from('bv_spirits')
-      .select('id, name, brand, category, image_url')
+      .select('id, name, brand, category, image_url, upc')
       .order('id', { ascending: true })
       .limit(batchLimit);
     
