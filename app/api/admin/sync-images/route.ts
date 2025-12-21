@@ -7,6 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const BUCKET_NAME = 'spirit-images';
 
+// Verified working official images - download and host these
 const VERIFIED_IMAGES: Record<string, string> = {
   'buffalo trace': 'https://wordpress-1508494-5786922.cloudwaysapps.com/wp-content/uploads/2025/11/BUFFALO_TRACE_BOTTLE-e1765117225509.png',
   'blanton': 'https://wordpress-1508494-5786922.cloudwaysapps.com/wp-content/uploads/2025/12/BLANTONS.png',
@@ -31,26 +32,39 @@ function findVerifiedImage(name: string, brand: string): string | null {
   return null;
 }
 
-async function downloadImage(url: string): Promise<ArrayBuffer | null> {
+async function downloadAndUpload(spiritId: string, sourceUrl: string): Promise<string | null> {
   try {
-    const response = await fetch(url, {
+    // Download image
+    const response = await fetch(sourceUrl, {
       headers: { 'User-Agent': 'BarrelVerse-ImageSync/1.0' },
     });
-    if (!response.ok) return null;
-    return await response.arrayBuffer();
-  } catch {
+    
+    if (!response.ok) {
+      console.log('Download failed for ' + spiritId + ': HTTP ' + response.status);
+      return null;
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const filename = spiritId + '.jpg';
+    
+    // Upload to Supabase Storage
+    const { error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(filename, arrayBuffer, { 
+        contentType: 'image/jpeg', 
+        upsert: true 
+      });
+    
+    if (error) {
+      console.log('Upload failed for ' + spiritId + ': ' + error.message);
+      return null;
+    }
+    
+    return supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
+  } catch (e) {
+    console.log('Error for ' + spiritId + ': ' + (e instanceof Error ? e.message : 'Unknown'));
     return null;
   }
-}
-
-async function uploadImage(spiritId: string, imageBuffer: ArrayBuffer): Promise<string | null> {
-  const filename = spiritId + '.jpg';
-  const { error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .upload(filename, imageBuffer, { contentType: 'image/jpeg', upsert: true });
-  
-  if (error) return null;
-  return supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
 }
 
 export async function GET() {
@@ -64,12 +78,10 @@ export async function GET() {
       .select('*', { count: 'exact', head: true })
       .like('image_url', '%' + BUCKET_NAME + '%');
     
-    const remaining = (total || 0) - (synced || 0);
-    
     return NextResponse.json({
       total: total || 0,
       synced: synced || 0,
-      remaining: remaining,
+      remaining: (total || 0) - (synced || 0),
       percentComplete: total ? Math.round(((synced || 0) / total) * 100) : 0,
       storageUrl: supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/',
     });
@@ -83,60 +95,95 @@ export async function POST(request: NextRequest) {
   
   try {
     const body = await request.json().catch(() => ({}));
-    const batchSize = body.batchSize || 50;
+    const batchSize = Math.min(body.batchSize || 20, 50);
+    const priorityOnly = body.priorityOnly === true; // Only process verified brands
     
     // Ensure bucket exists
     const { data: buckets } = await supabase.storage.listBuckets();
     if (!buckets?.some(b => b.name === BUCKET_NAME)) {
-      await supabase.storage.createBucket(BUCKET_NAME, { public: true });
+      const { error } = await supabase.storage.createBucket(BUCKET_NAME, { public: true });
+      if (error) {
+        return NextResponse.json({ error: 'Failed to create bucket: ' + error.message }, { status: 500 });
+      }
     }
     
-    const { data: spirits, error } = await supabase
+    // Get spirits that need syncing
+    let query = supabase
       .from('bv_spirits')
       .select('id, name, brand, image_url')
       .not('image_url', 'like', '%' + BUCKET_NAME + '%')
       .limit(batchSize);
     
-    if (error || !spirits) {
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    // If priorityOnly, only get spirits that match verified image patterns
+    if (priorityOnly) {
+      const patterns = Object.keys(VERIFIED_IMAGES);
+      const orConditions = patterns.map(p => 'name.ilike.%' + p + '%,brand.ilike.%' + p + '%').join(',');
+      query = query.or(orConditions);
+    }
+    
+    const { data: spirits, error } = await query;
+    
+    if (error) {
+      return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
+    }
+    
+    if (!spirits || spirits.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No spirits to process',
+        processed: 0,
+        uploaded: 0,
+        duration: Date.now() - startTime,
+      });
     }
     
     let uploaded = 0;
     let failed = 0;
+    const results: { id: string; status: string; url?: string }[] = [];
     
     for (const spirit of spirits) {
+      // Get source URL - prefer verified, fallback to existing if valid
       let sourceUrl = findVerifiedImage(spirit.name || '', spirit.brand || '');
       
-      if (!sourceUrl && spirit.image_url) {
+      if (!sourceUrl && spirit.image_url && !priorityOnly) {
+        // Validate existing URL
         try {
           const res = await fetch(spirit.image_url, { method: 'HEAD' });
-          if (res.ok) sourceUrl = spirit.image_url;
-        } catch { /* ignore */ }
+          if (res.ok) {
+            sourceUrl = spirit.image_url;
+          }
+        } catch {
+          // URL is invalid
+        }
       }
       
       if (!sourceUrl) {
         failed++;
+        results.push({ id: spirit.id, status: 'no_source' });
         continue;
       }
       
-      const imageBuffer = await downloadImage(sourceUrl);
-      if (!imageBuffer) {
-        failed++;
-        continue;
-      }
+      const newUrl = await downloadAndUpload(spirit.id, sourceUrl);
       
-      const newUrl = await uploadImage(spirit.id, imageBuffer);
       if (!newUrl) {
         failed++;
+        results.push({ id: spirit.id, status: 'failed' });
         continue;
       }
       
-      await supabase
+      // Update database
+      const { error: updateError } = await supabase
         .from('bv_spirits')
         .update({ image_url: newUrl, thumbnail_url: newUrl })
         .eq('id', spirit.id);
       
-      uploaded++;
+      if (updateError) {
+        failed++;
+        results.push({ id: spirit.id, status: 'db_error' });
+      } else {
+        uploaded++;
+        results.push({ id: spirit.id, status: 'success', url: newUrl });
+      }
     }
     
     const { count: remaining } = await supabase
@@ -151,6 +198,7 @@ export async function POST(request: NextRequest) {
       failed,
       remaining: remaining || 0,
       duration: Date.now() - startTime,
+      details: results.slice(0, 10), // Only return first 10 for brevity
     });
     
   } catch (error) {
