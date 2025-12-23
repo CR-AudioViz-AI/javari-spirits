@@ -20,25 +20,24 @@ async function searchWikimedia(spiritName: string, brand?: string): Promise<Imag
   const searchTerms = brand ? `${brand} ${spiritName} bottle` : `${spiritName} bottle whiskey`;
   try {
     const response = await fetch(
-      `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerms)}&srnamespace=6&srlimit=5&format=json&origin=*`,
+      `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerms)}&srnamespace=6&srlimit=3&format=json&origin=*`,
       { headers: { 'User-Agent': 'CRAVBarrels/1.0' } }
     );
     if (!response.ok) return [];
     const data = await response.json();
     const results: ImageResult[] = [];
-    for (const item of (data.query?.search || []).slice(0, 3)) {
-      const imageInfo = await getImageInfo(item.title);
+    for (const item of (data.query?.search || []).slice(0, 2)) {
+      const imageInfo = await getWikiImageInfo(item.title);
       if (imageInfo) results.push(imageInfo);
-      await sleep(300);
     }
     return results;
-  } catch { return []; }
+  } catch (e) { console.error('Wikimedia error:', e); return []; }
 }
 
-async function getImageInfo(fileTitle: string): Promise<ImageResult | null> {
+async function getWikiImageInfo(fileTitle: string): Promise<ImageResult | null> {
   try {
     const response = await fetch(
-      `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url|size|extmetadata&format=json&origin=*`,
+      `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url|size&format=json&origin=*`,
       { headers: { 'User-Agent': 'CRAVBarrels/1.0' } }
     );
     if (!response.ok) return null;
@@ -46,64 +45,68 @@ async function getImageInfo(fileTitle: string): Promise<ImageResult | null> {
     const page = Object.values(data.query?.pages || {})[0] as any;
     if (!page?.imageinfo?.[0]) return null;
     const info = page.imageinfo[0];
-    const meta = info.extmetadata || {};
-    let license = 'cc0';
-    const ls = (meta.LicenseShortName?.value || '').toLowerCase();
-    if (ls.includes('cc-by-sa')) license = 'cc-by-sa';
-    else if (ls.includes('cc-by')) license = 'cc-by';
     return {
-      url: info.url, thumbnail_url: info.thumburl, source: 'wikimedia', license,
-      attribution: meta.Artist?.value || 'Wikimedia Commons',
+      url: info.url,
+      thumbnail_url: info.thumburl || info.url,
+      source: 'wikimedia',
+      license: 'cc-by-sa',
+      attribution: 'Wikimedia Commons',
       source_url: `https://commons.wikimedia.org/wiki/${encodeURIComponent(fileTitle)}`,
-      width: info.width, height: info.height
+      width: info.width,
+      height: info.height
     };
   } catch { return null; }
 }
 
-async function searchOpenverse(spiritName: string, brand?: string): Promise<ImageResult[]> {
-  const searchTerms = brand ? `${brand} ${spiritName} bottle` : `${spiritName} whiskey bottle`;
+async function saveImageToDb(spiritId: string, image: ImageResult, isPrimary: boolean): Promise<string | null> {
   try {
-    const response = await fetch(
-      `https://api.openverse.org/v1/images/?q=${encodeURIComponent(searchTerms)}&license=cc0,by,by-sa&mature=false&page_size=5`,
-      { headers: { 'User-Agent': 'CRAVBarrels/1.0' } }
-    );
-    if (!response.ok) return [];
-    const data = await response.json();
-    return (data.results || []).slice(0, 3).map((item: any) => ({
-      url: item.url, thumbnail_url: item.thumbnail, source: 'openverse',
-      license: item.license || 'cc-by', attribution: item.attribution || item.creator || 'Unknown',
-      source_url: item.foreign_landing_url || item.url, width: item.width, height: item.height
-    }));
-  } catch { return []; }
+    const { data, error } = await supabase.from('spirit_images').insert({
+      spirit_id: spiritId,
+      url: image.url,
+      thumbnail_url: image.thumbnail_url || null,
+      source: image.source || 'wikimedia',
+      license: image.license || 'cc-by-sa',
+      attribution_required: true,
+      attribution_text: image.attribution || 'Wikimedia Commons',
+      source_url: image.source_url || '',
+      width: image.width || null,
+      height: image.height || null,
+      status: 'approved',
+      is_primary: isPrimary
+    }).select('id').single();
+    
+    if (error) {
+      console.error('Insert error:', error);
+      return null;
+    }
+    return data?.id || null;
+  } catch (e) {
+    console.error('Save error:', e);
+    return null;
+  }
 }
 
-async function saveImage(spiritId: string, image: ImageResult, isPrimary: boolean) {
-  const { data, error } = await supabase.from('spirit_images').insert({
-    spirit_id: spiritId, url: image.url, thumbnail_url: image.thumbnail_url,
-    source: image.source, license: image.license, attribution_required: image.license !== 'cc0',
-    attribution_text: image.attribution, source_url: image.source_url,
-    width: image.width, height: image.height, status: 'approved', is_primary: isPrimary
-  }).select().single();
-  return error ? null : data;
+async function updateSpiritImage(spiritId: string, imageId: string) {
+  try {
+    await supabase.from('bv_spirits').update({ primary_image_id: imageId }).eq('id', spiritId);
+  } catch (e) {
+    console.error('Update spirit error:', e);
+  }
 }
 
-async function updateSpiritPrimaryImage(spiritId: string, imageId: string) {
-  await supabase.from('bv_spirits').update({ primary_image_id: imageId }).eq('id', spiritId);
-}
-
-function sleep(ms: number) { return new Promise(resolve => setTimeout(resolve, ms)); }
+function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const limit = Math.min(body.limit || 50, 100);
-    const priorityOnly = body.priorityOnly || false;
+    const limit = Math.min(body.limit || 30, 50);
 
-    let query = supabase.from('bv_spirits').select('id, name, brand, category').is('primary_image_id', null);
-    if (priorityOnly) {
-      query = query.or('brand.ilike.%pappy%,brand.ilike.%buffalo trace%,brand.ilike.%makers mark%,brand.ilike.%jack daniels%,brand.ilike.%johnnie walker%,brand.ilike.%macallan%,brand.ilike.%glenfiddich%,brand.ilike.%blanton%,brand.ilike.%weller%');
-    }
-    const { data: spirits, error } = await query.limit(limit);
+    const { data: spirits, error } = await supabase
+      .from('bv_spirits')
+      .select('id, name, brand')
+      .is('primary_image_id', null)
+      .limit(limit);
+      
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     const results = { processed: 0, imagesFound: 0, imagesSaved: 0, spiritsWithImages: 0, errors: [] as string[] };
@@ -111,37 +114,35 @@ export async function POST(request: NextRequest) {
     for (const spirit of spirits || []) {
       results.processed++;
       try {
-        const wikimediaImages = await searchWikimedia(spirit.name, spirit.brand);
-        await sleep(1000);
-        const openverseImages = await searchOpenverse(spirit.name, spirit.brand);
-        await sleep(1000);
-        const allImages = [...wikimediaImages, ...openverseImages];
-        results.imagesFound += allImages.length;
-        if (allImages.length > 0) {
-          const primaryImage = await saveImage(spirit.id, allImages[0], true);
-          if (primaryImage) {
+        await sleep(1500);
+        const images = await searchWikimedia(spirit.name, spirit.brand);
+        results.imagesFound += images.length;
+        
+        if (images.length > 0) {
+          const imageId = await saveImageToDb(spirit.id, images[0], true);
+          if (imageId) {
             results.imagesSaved++;
             results.spiritsWithImages++;
-            await updateSpiritPrimaryImage(spirit.id, primaryImage.id);
-          }
-          for (let i = 1; i < Math.min(allImages.length, 3); i++) {
-            const saved = await saveImage(spirit.id, allImages[i], false);
-            if (saved) results.imagesSaved++;
+            await updateSpiritImage(spirit.id, imageId);
           }
         }
-      } catch (error: any) { results.errors.push(`${spirit.name}: ${error.message}`); }
+      } catch (e: any) { 
+        results.errors.push(`${spirit.name}: ${e.message}`); 
+      }
     }
     return NextResponse.json({ success: true, message: `Processed ${results.processed} spirits`, results });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const { count: total } = await supabase.from('bv_spirits').select('*', { count: 'exact', head: true });
   const { count: withImages } = await supabase.from('bv_spirits').select('*', { count: 'exact', head: true }).not('primary_image_id', 'is', null);
   return NextResponse.json({
-    total_spirits: total || 0, with_images: withImages || 0, without_images: (total || 0) - (withImages || 0),
+    total_spirits: total || 0,
+    with_images: withImages || 0,
+    without_images: (total || 0) - (withImages || 0),
     coverage_percent: total ? ((withImages || 0) / total * 100).toFixed(1) : 0
   });
 }
