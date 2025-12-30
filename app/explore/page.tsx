@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -230,120 +230,162 @@ function FilterSidebar({
         <select
           value={filters.sort}
           onChange={(e) => onFilterChange('sort', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
         >
           <option value="relevance">Most Relevant</option>
           <option value="rating">Highest Rated</option>
           <option value="price_asc">Price: Low to High</option>
           <option value="price_desc">Price: High to Low</option>
-          <option value="name">Name A-Z</option>
-          <option value="newest">Newest</option>
+          <option value="name_asc">Name: A to Z</option>
+          <option value="name_desc">Name: Z to A</option>
+          <option value="newest">Newest First</option>
         </select>
       </div>
       
-      {/* Categories */}
-      {facets?.categories && facets.categories.length > 0 && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            <button
-              onClick={() => onFilterChange('category', '')}
-              className={`w-full text-left px-3 py-1.5 rounded-lg text-sm ${
-                !filters.category ? 'bg-amber-100 text-amber-700' : 'hover:bg-gray-100 text-gray-600'
-              }`}
-            >
-              All Categories
-            </button>
-            {facets.categories.map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => onFilterChange('category', cat.value)}
-                className={`w-full text-left px-3 py-1.5 rounded-lg text-sm flex items-center justify-between ${
-                  filters.category === cat.value ? 'bg-amber-100 text-amber-700' : 'hover:bg-gray-100 text-gray-600'
-                }`}
-              >
-                <span className="capitalize">{cat.value}</span>
-                <span className="text-xs text-gray-400">{cat.count.toLocaleString()}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Category */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+        <select
+          value={filters.category}
+          onChange={(e) => onFilterChange('category', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+        >
+          <option value="">All Categories</option>
+          {facets?.categories.map(cat => (
+            <option key={cat.value} value={cat.value}>
+              {cat.value} ({cat.count.toLocaleString()})
+            </option>
+          ))}
+        </select>
+      </div>
       
-      {/* Countries */}
-      {facets?.countries && facets.countries.length > 0 && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-          <select
-            value={filters.country}
-            onChange={(e) => onFilterChange('country', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
-          >
-            <option value="">All Countries</option>
-            {facets.countries.map((country) => (
-              <option key={country.value} value={country.value}>
-                {country.value} ({country.count.toLocaleString()})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      {/* Country */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+        <select
+          value={filters.country}
+          onChange={(e) => onFilterChange('country', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+        >
+          <option value="">All Countries</option>
+          {facets?.countries.map(country => (
+            <option key={country.value} value={country.value}>
+              {country.value} ({country.count.toLocaleString()})
+            </option>
+          ))}
+        </select>
+      </div>
       
       {/* Price Range */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2">
           <input
             type="number"
+            placeholder="Min"
             value={filters.minPrice}
             onChange={(e) => onFilterChange('minPrice', e.target.value)}
-            placeholder="Min"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
           />
-          <span className="text-gray-400">-</span>
           <input
             type="number"
+            placeholder="Max"
             value={filters.maxPrice}
             onChange={(e) => onFilterChange('maxPrice', e.target.value)}
-            placeholder="Max"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
           />
         </div>
-        {facets?.priceRanges && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {facets.priceRanges.map((range) => (
-              <button
-                key={range.label}
-                onClick={() => {
-                  onFilterChange('minPrice', range.min.toString());
-                  onFilterChange('maxPrice', range.max === 999999 ? '' : range.max.toString());
-                }}
-                className="px-2 py-1 text-xs bg-gray-100 hover:bg-amber-100 rounded-full text-gray-600 hover:text-amber-700"
-              >
-                {range.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="mt-2 flex flex-wrap gap-1">
+          {facets?.priceRanges.map(range => (
+            <button
+              key={range.label}
+              onClick={() => {
+                onFilterChange('minPrice', range.min.toString());
+                onFilterChange('maxPrice', range.max.toString());
+              }}
+              className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                filters.minPrice === range.min.toString() && filters.maxPrice === range.max.toString()
+                  ? 'bg-amber-100 border-amber-300 text-amber-700'
+                  : 'border-gray-200 hover:border-amber-300 text-gray-600'
+              }`}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
       </div>
       
-      {/* Rating Filter */}
+      {/* Rating */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
         <div className="flex gap-2">
-          {['', '3', '4', '4.5'].map((rating) => (
+          {[4, 3.5, 3, 2.5].map(rating => (
             <button
               key={rating}
-              onClick={() => onFilterChange('minRating', rating)}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm ${
-                filters.minRating === rating
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+              onClick={() => onFilterChange('minRating', filters.minRating === rating.toString() ? '' : rating.toString())}
+              className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                filters.minRating === rating.toString()
+                  ? 'bg-amber-100 border-amber-300 text-amber-700'
+                  : 'border-gray-200 hover:border-amber-300 text-gray-600'
               }`}
             >
-              {rating ? `${rating}+` : 'Any'}
+              {rating}+★
             </button>
           ))}
+        </div>
+      </div>
+      
+      {/* Quick Filters */}
+      <div className="pt-4 border-t border-gray-200">
+        <p className="text-sm font-medium text-gray-700 mb-3">Quick Filters</p>
+        <div className="space-y-2">
+          <button
+            onClick={() => {
+              onClearFilters();
+              onFilterChange('category', 'Bourbon');
+              onFilterChange('country', 'United States');
+            }}
+            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 text-gray-700"
+          >
+            🇺🇸 American Bourbon
+          </button>
+          <button
+            onClick={() => {
+              onClearFilters();
+              onFilterChange('category', 'Scotch');
+              onFilterChange('country', 'Scotland');
+            }}
+            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 text-gray-700"
+          >
+            🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scottish Whisky
+          </button>
+          <button
+            onClick={() => {
+              onClearFilters();
+              onFilterChange('category', 'Japanese Whisky');
+            }}
+            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 text-gray-700"
+          >
+            🇯🇵 Japanese Whisky
+          </button>
+          <button
+            onClick={() => {
+              onClearFilters();
+              onFilterChange('category', 'Tequila');
+            }}
+            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 text-gray-700"
+          >
+            🇲🇽 Premium Tequila
+          </button>
+          <button
+            onClick={() => {
+              onClearFilters();
+              onFilterChange('minRating', '4');
+            }}
+            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 text-gray-700"
+          >
+            ⭐ Highly Rated (4+)
+          </button>
         </div>
       </div>
     </div>
@@ -355,51 +397,51 @@ function SpiritCard({ spirit }: { spirit: Spirit }) {
     <Link href={`/spirits/${spirit.id}`}>
       <motion.div
         whileHover={{ y: -4 }}
-        className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
+        className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group"
       >
         {/* Image */}
-        <div className="aspect-square bg-gray-100 relative">
+        <div className="aspect-square bg-gradient-to-br from-amber-50 to-orange-50 relative overflow-hidden">
           {spirit.image_url ? (
             <img
               src={spirit.image_url}
               alt={spirit.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl text-gray-300">
-              🥃
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-6xl opacity-50">🥃</span>
             </div>
           )}
+          
+          {/* Rating Badge */}
           {spirit.community_rating && (
-            <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white rounded-lg text-sm font-medium flex items-center gap-1">
-              <span className="text-amber-400">★</span>
-              {spirit.community_rating.toFixed(1)}
+            <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-lg text-sm font-medium">
+              ⭐ {spirit.community_rating.toFixed(1)}
+            </div>
+          )}
+          
+          {/* Category Badge */}
+          {spirit.category && (
+            <div className="absolute bottom-2 left-2 bg-white/90 text-gray-700 px-2 py-1 rounded-lg text-xs font-medium">
+              {spirit.category}
             </div>
           )}
         </div>
         
-        {/* Content */}
-        <div className="p-4 flex-1 flex flex-col">
-          <div className="flex-1">
-            <p className="text-xs text-amber-600 font-medium uppercase mb-1">
-              {spirit.category}
-              {spirit.subcategory && ` • ${spirit.subcategory}`}
-            </p>
-            <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">{spirit.name}</h3>
-            {spirit.brand && (
-              <p className="text-sm text-gray-500">{spirit.brand}</p>
-            )}
-          </div>
-          
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              {spirit.abv && <span>{spirit.abv}%</span>}
-              {spirit.country && <span>• {spirit.country}</span>}
-            </div>
+        {/* Info */}
+        <div className="p-4">
+          <p className="text-xs text-amber-600 font-medium truncate">{spirit.brand || 'Unknown Brand'}</p>
+          <h3 className="font-medium text-gray-900 truncate mt-1">{spirit.name}</h3>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm text-gray-500">{spirit.country || 'Unknown'}</span>
             {spirit.msrp && (
-              <span className="font-semibold text-gray-900">${spirit.msrp}</span>
+              <span className="font-semibold text-gray-900">${spirit.msrp.toFixed(0)}</span>
             )}
           </div>
+          {spirit.abv && (
+            <p className="text-xs text-gray-400 mt-1">{spirit.abv}% ABV</p>
+          )}
         </div>
       </motion.div>
     </Link>
@@ -413,91 +455,82 @@ function Pagination({
   pagination: SearchResult['pagination'];
   onPageChange: (page: number) => void;
 }) {
-  const { currentPage, totalPages, total } = pagination;
+  const { currentPage, totalPages } = pagination;
   
-  const pages = [];
-  const maxVisible = 5;
-  let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-  let end = Math.min(totalPages, start + maxVisible - 1);
-  
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
+  // Generate page numbers to show
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    // Always show first page
+    pages.push(1);
+    
+    if (currentPage > 3) {
+      pages.push('...');
+    }
+    
+    // Pages around current
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    
+    if (currentPage < totalPages - 2) {
+      pages.push('...');
+    }
+    
+    // Always show last page
+    pages.push(totalPages);
+    
+    return pages;
+  };
   
   return (
-    <div className="flex items-center justify-between">
-      <p className="text-sm text-gray-500">
-        Showing {((currentPage - 1) * pagination.limit) + 1} - {Math.min(currentPage * pagination.limit, total)} of {total.toLocaleString()} spirits
-      </p>
+    <div className="flex items-center justify-center gap-2">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        ← Prev
+      </button>
       
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          ←
-        </button>
-        
-        {start > 1 && (
-          <>
-            <button
-              onClick={() => onPageChange(1)}
-              className="px-3 py-2 rounded-lg hover:bg-gray-100"
-            >
-              1
-            </button>
-            {start > 2 && <span className="px-2 text-gray-400">...</span>}
-          </>
-        )}
-        
-        {pages.map((page) => (
+      {getPageNumbers().map((page, idx) => (
+        typeof page === 'number' ? (
           <button
-            key={page}
+            key={idx}
             onClick={() => onPageChange(page)}
-            className={`px-3 py-2 rounded-lg ${
+            className={`w-10 h-10 rounded-lg font-medium transition-colors ${
               page === currentPage
                 ? 'bg-amber-500 text-white'
-                : 'hover:bg-gray-100'
+                : 'border border-gray-300 hover:bg-gray-50'
             }`}
           >
             {page}
           </button>
-        ))}
-        
-        {end < totalPages && (
-          <>
-            {end < totalPages - 1 && <span className="px-2 text-gray-400">...</span>}
-            <button
-              onClick={() => onPageChange(totalPages)}
-              className="px-3 py-2 rounded-lg hover:bg-gray-100"
-            >
-              {totalPages}
-            </button>
-          </>
-        )}
-        
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          →
-        </button>
-      </div>
+        ) : (
+          <span key={idx} className="px-2 text-gray-400">...</span>
+        )
+      ))}
+      
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next →
+      </button>
     </div>
   );
 }
 
 // ============================================
-// MAIN PAGE
+// MAIN CONTENT COMPONENT (uses useSearchParams)
 // ============================================
 
-export default function ExplorePage() {
+function ExploreContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -745,5 +778,59 @@ export default function ExplorePage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ============================================
+// LOADING FALLBACK
+// ============================================
+
+function ExploreLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Skeleton */}
+      <div className="bg-gradient-to-r from-amber-700 to-orange-800 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="h-8 w-48 bg-white/20 rounded mb-2 animate-pulse" />
+          <div className="h-5 w-96 bg-white/20 rounded mb-6 animate-pulse" />
+          <div className="h-12 bg-white/20 rounded-xl animate-pulse" />
+        </div>
+      </div>
+      
+      {/* Content Skeleton */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex gap-8">
+          <div className="hidden lg:block w-64 flex-shrink-0">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 h-96 animate-pulse" />
+          </div>
+          <div className="flex-1">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+                  <div className="aspect-square bg-gray-200" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-3 bg-gray-200 rounded w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// MAIN PAGE EXPORT WITH SUSPENSE
+// ============================================
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={<ExploreLoading />}>
+      <ExploreContent />
+    </Suspense>
   );
 }
