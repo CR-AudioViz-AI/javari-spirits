@@ -1,285 +1,595 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Gamepad2, Brain, Wine, Map, Trophy, Star, 
-  Lock, Crown, Sparkles, ArrowRight, Users
-} from 'lucide-react';
-import TriviaGame from '@/components/games/TriviaGame';
-import BlindTastingGame from '@/components/games/BlindTastingGame';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type GameType = 'menu' | 'trivia' | 'blind-tasting' | 'bottle-hunt' | 'collection-challenge';
+// ============================================
+// TYPES
+// ============================================
 
-interface GameCard {
-  id: GameType;
-  title: string;
+interface Game {
+  id: string;
+  name: string;
   description: string;
-  icon: React.ReactNode;
-  color: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  duration: string;
-  premium: boolean;
-  comingSoon?: boolean;
+  icon: string;
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  xpReward: number;
+  playCount: number;
+  status: 'available' | 'coming_soon' | 'locked';
+  href?: string;
 }
 
-const games: GameCard[] = [
+interface TriviaQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct_answer: number;
+  category: string;
+  difficulty: string;
+  xp_reward: number;
+}
+
+// ============================================
+// GAMES DATA
+// ============================================
+
+const GAMES: Game[] = [
   {
-    id: 'trivia',
-    title: 'Spirit Trivia',
-    description: 'Test your knowledge of whiskey, bourbon, scotch and more with 370+ questions!',
-    icon: <Brain className="w-8 h-8" />,
-    color: 'from-amber-500 to-orange-500',
-    difficulty: 'Easy',
-    duration: '5-10 min',
-    premium: false
+    id: 'trivia-daily',
+    name: 'Daily Trivia',
+    description: 'Test your spirits knowledge with 5 daily questions',
+    icon: '🧠',
+    category: 'Knowledge',
+    difficulty: 'medium',
+    xpReward: 100,
+    playCount: 15234,
+    status: 'available',
+    href: '/games/trivia',
   },
   {
     id: 'blind-tasting',
-    title: 'Blind Tasting',
-    description: 'Identify spirits from tasting notes alone. Train your palate like a sommelier!',
-    icon: <Wine className="w-8 h-8" />,
-    color: 'from-purple-500 to-pink-500',
-    difficulty: 'Medium',
-    duration: '10-15 min',
-    premium: false
+    name: 'Blind Tasting',
+    description: 'Identify spirits based on tasting notes alone',
+    icon: '👃',
+    category: 'Tasting',
+    difficulty: 'hard',
+    xpReward: 200,
+    playCount: 8432,
+    status: 'available',
+    href: '/games/blind-tasting',
   },
   {
-    id: 'bottle-hunt',
-    title: 'Bottle Hunt',
-    description: 'Find rare bottles hidden in your area. Compete with other collectors!',
-    icon: <Map className="w-8 h-8" />,
-    color: 'from-green-500 to-teal-500',
-    difficulty: 'Hard',
-    duration: 'Ongoing',
-    premium: true,
-    comingSoon: true
+    id: 'price-guess',
+    name: 'Price Is Right',
+    description: 'Guess the market price of rare bottles',
+    icon: '💰',
+    category: 'Market',
+    difficulty: 'medium',
+    xpReward: 150,
+    playCount: 12543,
+    status: 'available',
+    href: '/games/price-guess',
   },
   {
-    id: 'collection-challenge',
-    title: 'Collection Challenge',
-    description: 'Build the perfect collection within a budget. Strategic collecting game!',
-    icon: <Trophy className="w-8 h-8" />,
-    color: 'from-blue-500 to-indigo-500',
-    difficulty: 'Medium',
-    duration: '15-20 min',
-    premium: true,
-    comingSoon: true
-  }
+    id: 'label-match',
+    name: 'Label Match',
+    description: 'Match bottle labels to their spirits',
+    icon: '🏷️',
+    category: 'Visual',
+    difficulty: 'easy',
+    xpReward: 75,
+    playCount: 9876,
+    status: 'available',
+    href: '/games/label-match',
+  },
+  {
+    id: 'distillery-tour',
+    name: 'Virtual Distillery Tour',
+    description: 'Explore famous distilleries around the world',
+    icon: '🏭',
+    category: 'Education',
+    difficulty: 'easy',
+    xpReward: 50,
+    playCount: 6543,
+    status: 'available',
+    href: '/games/distillery-tour',
+  },
+  {
+    id: 'cocktail-challenge',
+    name: 'Cocktail Challenge',
+    description: 'Build classic cocktails step by step',
+    icon: '🍹',
+    category: 'Mixology',
+    difficulty: 'medium',
+    xpReward: 125,
+    playCount: 11234,
+    status: 'coming_soon',
+  },
+  {
+    id: 'barrel-rush',
+    name: 'Barrel Rush',
+    description: 'Fast-paced barrel sorting arcade game',
+    icon: '🛢️',
+    category: 'Arcade',
+    difficulty: 'medium',
+    xpReward: 100,
+    playCount: 0,
+    status: 'coming_soon',
+  },
+  {
+    id: 'spirit-wars',
+    name: 'Spirit Wars',
+    description: 'Multiplayer spirit comparison battles',
+    icon: '⚔️',
+    category: 'Multiplayer',
+    difficulty: 'hard',
+    xpReward: 300,
+    playCount: 0,
+    status: 'coming_soon',
+  },
 ];
 
-export default function GamesPage() {
-  const [activeGame, setActiveGame] = useState<GameType>('menu');
-  const [userStats, setUserStats] = useState({
-    gamesPlayed: 0,
-    totalScore: 0,
-    achievements: 0
-  });
+const LEADERBOARD = [
+  { rank: 1, name: 'WhiskeyMaster', xp: 125000, avatar: '👨‍🍳', badge: '🏆' },
+  { rank: 2, name: 'BourbonKing', xp: 98500, avatar: '🤠', badge: '🥈' },
+  { rank: 3, name: 'ScotchLover', xp: 87200, avatar: '🧔', badge: '🥉' },
+  { rank: 4, name: 'RumRunner', xp: 76400, avatar: '🏴‍☠️', badge: '' },
+  { rank: 5, name: 'TequilaSunrise', xp: 65300, avatar: '🌵', badge: '' },
+];
 
-  const handleBack = () => setActiveGame('menu');
+// ============================================
+// GAMES HUB PAGE
+// ============================================
+
+export default function GamesHubPage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showTrivia, setShowTrivia] = useState(false);
+  const [triviaQuestions, setTriviaQuestions] = useState<TriviaQuestion[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [triviaComplete, setTriviaComplete] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const categories = ['all', ...new Set(GAMES.map(g => g.category))];
+  const filteredGames = selectedCategory === 'all' 
+    ? GAMES 
+    : GAMES.filter(g => g.category === selectedCategory);
+
+  // ============================================
+  // TRIVIA FUNCTIONS
+  // ============================================
+
+  const startTrivia = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/games/trivia?count=5');
+      const data = await response.json();
+      
+      if (data.success && data.questions) {
+        setTriviaQuestions(data.questions);
+        setShowTrivia(true);
+        setCurrentQuestion(0);
+        setScore(0);
+        setTriviaComplete(false);
+        setSelectedAnswer(null);
+      }
+    } catch (error) {
+      console.error('Failed to load trivia:', error);
+      // Use fallback questions
+      setTriviaQuestions([
+        {
+          id: '1',
+          question: 'Which region of Scotland is known for heavily peated whiskies?',
+          options: ['Speyside', 'Islay', 'Highland', 'Lowland'],
+          correct_answer: 1,
+          category: 'Scotch',
+          difficulty: 'medium',
+          xp_reward: 20,
+        },
+        {
+          id: '2',
+          question: 'What is the minimum aging requirement for Bourbon?',
+          options: ['No minimum', '2 years', '4 years', '6 years'],
+          correct_answer: 0,
+          category: 'Bourbon',
+          difficulty: 'medium',
+          xp_reward: 20,
+        },
+        {
+          id: '3',
+          question: 'Tequila must be made from which type of agave?',
+          options: ['Any agave', 'Blue Weber agave', 'Red agave', 'Wild agave'],
+          correct_answer: 1,
+          category: 'Tequila',
+          difficulty: 'easy',
+          xp_reward: 15,
+        },
+        {
+          id: '4',
+          question: 'What grain must Bourbon contain at least 51% of?',
+          options: ['Wheat', 'Rye', 'Corn', 'Barley'],
+          correct_answer: 2,
+          category: 'Bourbon',
+          difficulty: 'easy',
+          xp_reward: 15,
+        },
+        {
+          id: '5',
+          question: 'Which cocktail traditionally uses Cognac, Cointreau, and lemon juice?',
+          options: ['Margarita', 'Sidecar', 'Manhattan', 'Old Fashioned'],
+          correct_answer: 1,
+          category: 'Cocktails',
+          difficulty: 'medium',
+          xp_reward: 20,
+        },
+      ]);
+      setShowTrivia(true);
+      setCurrentQuestion(0);
+      setScore(0);
+      setTriviaComplete(false);
+      setSelectedAnswer(null);
+    }
+    setLoading(false);
+  };
+
+  const submitAnswer = (answerIndex: number) => {
+    if (selectedAnswer !== null) return;
+    
+    setSelectedAnswer(answerIndex);
+    const question = triviaQuestions[currentQuestion];
+    
+    if (answerIndex === question.correct_answer) {
+      setScore(prev => prev + question.xp_reward);
+    }
+    
+    // Move to next question after delay
+    setTimeout(() => {
+      if (currentQuestion < triviaQuestions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedAnswer(null);
+      } else {
+        setTriviaComplete(true);
+      }
+    }, 1500);
+  };
+
+  const closeTrivia = () => {
+    setShowTrivia(false);
+    setTriviaQuestions([]);
+    setCurrentQuestion(0);
+    setSelectedAnswer(null);
+    setScore(0);
+    setTriviaComplete(false);
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-b border-amber-900/50">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Gamepad2 className="w-10 h-10 text-amber-400" />
-              <div>
-                <h1 className="text-2xl font-bold text-white">CRAVBarrels Games</h1>
-                <p className="text-amber-400/80 text-sm">Learn, play, and earn rewards</p>
+      <header className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-white">
+            <span className="text-2xl">🥃</span>
+            <span className="font-bold">CravBarrels</span>
+          </Link>
+          <h1 className="text-xl font-bold text-white">Games Hub</h1>
+          <Link href="/rewards" className="flex items-center gap-2 text-amber-500">
+            <span>🏆</span>
+            <span className="font-medium">Rewards</span>
+          </Link>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-3xl p-8 mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2">Play & Earn XP</h2>
+              <p className="text-amber-100 max-w-lg">
+                Test your spirits knowledge, compete with friends, and earn rewards 
+                while having fun!
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-white">
+                  {GAMES.filter(g => g.status === 'available').length}
+                </div>
+                <div className="text-amber-200 text-sm">Games Available</div>
+              </div>
+              <div className="w-px h-12 bg-amber-500/50" />
+              <div className="text-center">
+                <div className="text-4xl font-bold text-white">
+                  {GAMES.reduce((acc, g) => acc + g.playCount, 0).toLocaleString()}
+                </div>
+                <div className="text-amber-200 text-sm">Games Played</div>
               </div>
             </div>
-            
-            {activeGame !== 'menu' && (
-              <button
-                onClick={handleBack}
-                className="text-amber-400 hover:text-amber-300 transition flex items-center gap-2"
-              >
-                ← Back to Games
-              </button>
-            )}
           </div>
-        </div>
-      </div>
+        </section>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {activeGame === 'menu' && (
-          <>
-            {/* Stats Banner */}
-            <div className="bg-gradient-to-r from-gray-800 to-gray-800/50 rounded-xl p-6 mb-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-white">{userStats.gamesPlayed}</p>
-                    <p className="text-sm text-gray-400">Games Played</p>
-                  </div>
-                  <div className="h-12 w-px bg-gray-700" />
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-amber-400">{userStats.totalScore.toLocaleString()}</p>
-                    <p className="text-sm text-gray-400">Total Score</p>
-                  </div>
-                  <div className="h-12 w-px bg-gray-700" />
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-purple-400">{userStats.achievements}</p>
-                    <p className="text-sm text-gray-400">Achievements</p>
-                  </div>
-                </div>
-                
-                <button className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white transition">
-                  <Users className="w-4 h-4" />
-                  Leaderboard
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {categories.map(category => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    selectedCategory === category
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  }`}
+                >
+                  {category === 'all' ? 'All Games' : category}
                 </button>
-              </div>
+              ))}
             </div>
 
             {/* Games Grid */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {games.map((game, index) => (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredGames.map((game) => (
                 <motion.div
                   key={game.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => !game.comingSoon && setActiveGame(game.id)}
-                  className={`relative bg-gray-800 rounded-xl overflow-hidden cursor-pointer group ${
-                    game.comingSoon ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                  className={`bg-gray-800 rounded-2xl p-6 border border-gray-700 ${
+                    game.status === 'available' ? 'hover:border-amber-500/50 cursor-pointer' : 'opacity-60'
+                  } transition-all`}
+                  onClick={() => {
+                    if (game.id === 'trivia-daily' && game.status === 'available') {
+                      startTrivia();
+                    }
+                  }}
                 >
-                  {/* Gradient top bar */}
-                  <div className={`h-2 bg-gradient-to-r ${game.color}`} />
-                  
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-r ${game.color} bg-opacity-20`}>
-                        {game.icon}
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {game.premium && (
-                          <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
-                            <Crown className="w-3 h-3" />
-                            Premium
-                          </span>
-                        )}
-                        {game.comingSoon && (
-                          <span className="bg-gray-700 text-gray-300 px-2 py-1 rounded-full text-xs">
-                            Coming Soon
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition">
-                      {game.title}
-                    </h3>
-                    <p className="text-gray-400 mb-4">{game.description}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className={`px-2 py-1 rounded ${
-                          game.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                          game.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
-                        }`}>
-                          {game.difficulty}
-                        </span>
-                        <span className="text-gray-500">{game.duration}</span>
-                      </div>
-                      
-                      {!game.comingSoon && (
-                        <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
-                      )}
-                    </div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-4xl">{game.icon}</div>
+                    {game.status === 'coming_soon' && (
+                      <span className="px-2 py-1 bg-gray-700 text-gray-400 text-xs rounded-full">
+                        Coming Soon
+                      </span>
+                    )}
+                    {game.status === 'available' && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        game.difficulty === 'easy' ? 'bg-green-500/20 text-green-400' :
+                        game.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {game.difficulty}
+                      </span>
+                    )}
                   </div>
+                  <h3 className="font-bold text-lg text-white mb-2">{game.name}</h3>
+                  <p className="text-gray-400 text-sm mb-4">{game.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-amber-500 font-medium">+{game.xpReward} XP</span>
+                    {game.playCount > 0 && (
+                      <span className="text-gray-500">
+                        {game.playCount.toLocaleString()} plays
+                      </span>
+                    )}
+                  </div>
+                  {game.status === 'available' && (
+                    <button 
+                      className="w-full mt-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (game.id === 'trivia-daily') {
+                          startTrivia();
+                        } else if (game.href) {
+                          window.location.href = game.href;
+                        }
+                      }}
+                    >
+                      Play Now
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>
+          </div>
 
+          {/* Sidebar */}
+          <div className="space-y-6">
             {/* Daily Challenge */}
-            <div className="mt-8 bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-900/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-amber-500/20 rounded-xl">
-                    <Sparkles className="w-8 h-8 text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">Daily Challenge</h3>
-                    <p className="text-amber-400/80">Complete today's challenge for bonus rewards!</p>
-                  </div>
-                </div>
-                
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-amber-400">+100 🎖️</p>
-                  <p className="text-sm text-gray-400">Proof Bonus</p>
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">⚡</span>
+                <div>
+                  <h3 className="font-bold text-white">Daily Challenge</h3>
+                  <p className="text-purple-200 text-sm">Resets in 12:34:56</p>
                 </div>
               </div>
-              
-              <div className="mt-4 p-4 bg-gray-800/50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-medium">Score 500+ in Spirit Trivia</p>
-                    <p className="text-sm text-gray-400">0 / 500 points</p>
-                  </div>
-                  <button 
-                    onClick={() => setActiveGame('trivia')}
-                    className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg font-medium transition"
-                  >
-                    Play Now
-                  </button>
-                </div>
-              </div>
+              <p className="text-purple-100 text-sm mb-4">
+                Complete today's challenge to earn bonus XP and exclusive badges!
+              </p>
+              <button 
+                onClick={startTrivia}
+                className="w-full py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-colors"
+              >
+                Start Challenge
+              </button>
             </div>
 
-            {/* Achievements Preview */}
-            <div className="mt-8">
-              <h3 className="text-xl font-bold text-white mb-4">Recent Achievements</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { icon: '🎯', name: 'First Win', desc: 'Win your first game', unlocked: true },
-                  { icon: '🔥', name: 'On Fire', desc: '5 correct answers in a row', unlocked: true },
-                  { icon: '🏆', name: 'Champion', desc: 'Score 1000+ points', unlocked: false },
-                  { icon: '🧠', name: 'Expert', desc: 'Answer 100 questions correctly', unlocked: false }
-                ].map((achievement, i) => (
+            {/* Leaderboard */}
+            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+              <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                <span>🏆</span> Top Players
+              </h3>
+              <div className="space-y-3">
+                {LEADERBOARD.map((player) => (
                   <div 
-                    key={i}
-                    className={`p-4 rounded-lg ${
-                      achievement.unlocked ? 'bg-gray-800' : 'bg-gray-800/50 opacity-60'
+                    key={player.rank}
+                    className={`flex items-center gap-3 p-2 rounded-lg ${
+                      player.rank <= 3 ? 'bg-gray-700/50' : ''
                     }`}
                   >
-                    <span className="text-3xl mb-2 block">{achievement.icon}</span>
-                    <p className="font-medium text-white">{achievement.name}</p>
-                    <p className="text-xs text-gray-400">{achievement.desc}</p>
-                    {!achievement.unlocked && (
-                      <Lock className="w-4 h-4 text-gray-500 mt-2" />
-                    )}
+                    <span className="text-lg w-6">{player.badge || player.rank}</span>
+                    <span className="text-xl">{player.avatar}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-white text-sm">{player.name}</div>
+                      <div className="text-amber-500 text-xs">{player.xp.toLocaleString()} XP</div>
+                    </div>
                   </div>
                 ))}
               </div>
+              <Link 
+                href="/leaderboard"
+                className="block text-center text-amber-500 text-sm mt-4 hover:text-amber-400"
+              >
+                View Full Leaderboard →
+              </Link>
             </div>
-          </>
-        )}
 
-        {/* Game Views */}
-        {activeGame === 'trivia' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <TriviaGame />
-          </motion.div>
-        )}
-
-        {activeGame === 'blind-tasting' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <BlindTastingGame />
-          </motion.div>
-        )}
+            {/* Your Stats */}
+            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+              <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                <span>📊</span> Your Stats
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Games Played</span>
+                  <span className="text-white font-medium">47</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Total XP Earned</span>
+                  <span className="text-amber-500 font-medium">3,450</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Win Rate</span>
+                  <span className="text-green-400 font-medium">78%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Current Streak</span>
+                  <span className="text-white font-medium">🔥 5 days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
+
+      {/* Trivia Modal */}
+      <AnimatePresence>
+        {showTrivia && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-gray-800 rounded-2xl p-6 max-w-lg w-full border border-gray-700"
+            >
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl animate-bounce mb-4">🧠</div>
+                  <p className="text-white">Loading questions...</p>
+                </div>
+              ) : triviaComplete ? (
+                <div className="text-center py-8">
+                  <div className="text-6xl mb-4">🎉</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Quiz Complete!</h3>
+                  <p className="text-gray-400 mb-6">
+                    You earned <span className="text-amber-500 font-bold">{score} XP</span>
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={startTrivia}
+                      className="flex-1 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium"
+                    >
+                      Play Again
+                    </button>
+                    <button
+                      onClick={closeTrivia}
+                      className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              ) : triviaQuestions.length > 0 ? (
+                <>
+                  {/* Progress */}
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-gray-400 text-sm">
+                      Question {currentQuestion + 1} of {triviaQuestions.length}
+                    </span>
+                    <span className="text-amber-500 font-medium">
+                      {score} XP
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-700 rounded-full mb-6">
+                    <div 
+                      className="h-full bg-amber-500 rounded-full transition-all"
+                      style={{ width: `${((currentQuestion + 1) / triviaQuestions.length) * 100}%` }}
+                    />
+                  </div>
+
+                  {/* Question */}
+                  <h3 className="text-xl font-bold text-white mb-6">
+                    {triviaQuestions[currentQuestion].question}
+                  </h3>
+
+                  {/* Options */}
+                  <div className="space-y-3">
+                    {triviaQuestions[currentQuestion].options.map((option, idx) => {
+                      const isSelected = selectedAnswer === idx;
+                      const isCorrect = idx === triviaQuestions[currentQuestion].correct_answer;
+                      const showResult = selectedAnswer !== null;
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => submitAnswer(idx)}
+                          disabled={selectedAnswer !== null}
+                          className={`w-full p-4 rounded-xl text-left transition-all ${
+                            showResult
+                              ? isCorrect
+                                ? 'bg-green-500/20 border-green-500 text-green-400'
+                                : isSelected
+                                  ? 'bg-red-500/20 border-red-500 text-red-400'
+                                  : 'bg-gray-700/50 border-gray-600 text-gray-400'
+                              : 'bg-gray-700 hover:bg-gray-600 border-gray-600 text-white'
+                          } border`}
+                        >
+                          <span className="font-medium">{String.fromCharCode(65 + idx)}.</span> {option}
+                          {showResult && isCorrect && (
+                            <span className="float-right">✓</span>
+                          )}
+                          {showResult && isSelected && !isCorrect && (
+                            <span className="float-right">✗</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Close button */}
+                  <button
+                    onClick={closeTrivia}
+                    className="mt-6 text-gray-500 hover:text-gray-400 text-sm"
+                  >
+                    Exit Quiz
+                  </button>
+                </>
+              ) : null}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
