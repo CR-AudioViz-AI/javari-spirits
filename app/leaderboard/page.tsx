@@ -1,244 +1,315 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-interface LeaderboardEntry {
+// ============================================
+// TYPES
+// ============================================
+
+interface Player {
   rank: number;
+  id: string;
   username: string;
-  avatar?: string;
-  level: number;
+  avatar: string;
   xp: number;
-  spirits_tried: number;
-  quizzes_completed: number;
-  achievements: number;
-  streak_days: number;
-  badge: string;
+  level: number;
+  badges: string[];
+  streak: number;
+  joinedAt: string;
+  stats: {
+    gamesPlayed: number;
+    spiritsTasted: number;
+    reviewsWritten: number;
+    collectionsValue: number;
+  };
 }
 
-const SAMPLE_LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, username: 'WhiskeyMaster', level: 42, xp: 125000, spirits_tried: 458, quizzes_completed: 89, achievements: 45, streak_days: 128, badge: '👑' },
-  { rank: 2, username: 'BourbonBaron', level: 38, xp: 98500, spirits_tried: 392, quizzes_completed: 76, achievements: 38, streak_days: 95, badge: '🥈' },
-  { rank: 3, username: 'SingleMaltSam', level: 35, xp: 87200, spirits_tried: 345, quizzes_completed: 68, achievements: 32, streak_days: 67, badge: '🥉' },
-  { rank: 4, username: 'RyeRider', level: 33, xp: 76800, spirits_tried: 298, quizzes_completed: 62, achievements: 28, streak_days: 45, badge: '⭐' },
-  { rank: 5, username: 'PeatPrincess', level: 31, xp: 68500, spirits_tried: 267, quizzes_completed: 58, achievements: 26, streak_days: 38, badge: '⭐' },
-  { rank: 6, username: 'BarrelBuddy', level: 29, xp: 58200, spirits_tried: 234, quizzes_completed: 52, achievements: 23, streak_days: 32, badge: '⭐' },
-  { rank: 7, username: 'CaskChaser', level: 27, xp: 49800, spirits_tried: 198, quizzes_completed: 45, achievements: 20, streak_days: 28, badge: '🔥' },
-  { rank: 8, username: 'HighlandHero', level: 25, xp: 42500, spirits_tried: 176, quizzes_completed: 41, achievements: 18, streak_days: 21, badge: '🔥' },
-  { rank: 9, username: 'ProofPro', level: 23, xp: 36800, spirits_tried: 156, quizzes_completed: 38, achievements: 16, streak_days: 18, badge: '🔥' },
-  { rank: 10, username: 'MashBillMike', level: 21, xp: 31200, spirits_tried: 134, quizzes_completed: 32, achievements: 14, streak_days: 14, badge: '🔥' },
-  { rank: 11, username: 'DistilleryDan', level: 19, xp: 26500, spirits_tried: 118, quizzes_completed: 28, achievements: 12, streak_days: 12, badge: '' },
-  { rank: 12, username: 'NoseNinja', level: 17, xp: 22800, spirits_tried: 98, quizzes_completed: 24, achievements: 10, streak_days: 10, badge: '' },
-  { rank: 13, username: 'PalatePatrol', level: 15, xp: 19200, spirits_tried: 82, quizzes_completed: 21, achievements: 9, streak_days: 8, badge: '' },
-  { rank: 14, username: 'FinishFirst', level: 14, xp: 16800, spirits_tried: 72, quizzes_completed: 18, achievements: 8, streak_days: 7, badge: '' },
-  { rank: 15, username: 'SippingSage', level: 12, xp: 14200, spirits_tried: 58, quizzes_completed: 15, achievements: 7, streak_days: 5, badge: '' },
+// ============================================
+// MOCK DATA
+// ============================================
+
+const LEADERBOARD_DATA: Player[] = [
+  { rank: 1, id: '1', username: 'WhiskeyMaster', avatar: '👨‍🍳', xp: 125000, level: 45, badges: ['🏆', '🥃', '⭐'], streak: 42, joinedAt: '2023-01-15', stats: { gamesPlayed: 523, spiritsTasted: 312, reviewsWritten: 89, collectionsValue: 45000 } },
+  { rank: 2, id: '2', username: 'BourbonKing', avatar: '🤠', xp: 98500, level: 38, badges: ['🥈', '🔥', '📚'], streak: 28, joinedAt: '2023-03-22', stats: { gamesPlayed: 412, spiritsTasted: 256, reviewsWritten: 67, collectionsValue: 38000 } },
+  { rank: 3, id: '3', username: 'ScotchLover', avatar: '🧔', xp: 87200, level: 35, badges: ['🥉', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🎯'], streak: 21, joinedAt: '2023-02-10', stats: { gamesPlayed: 378, spiritsTasted: 198, reviewsWritten: 54, collectionsValue: 52000 } },
+  { rank: 4, id: '4', username: 'RumRunner', avatar: '🏴‍☠️', xp: 76400, level: 32, badges: ['🏝️', '⚓'], streak: 14, joinedAt: '2023-04-05', stats: { gamesPlayed: 298, spiritsTasted: 167, reviewsWritten: 43, collectionsValue: 21000 } },
+  { rank: 5, id: '5', username: 'TequilaSunrise', avatar: '🌵', xp: 65300, level: 28, badges: ['🇲🇽', '🌮'], streak: 19, joinedAt: '2023-05-18', stats: { gamesPlayed: 256, spiritsTasted: 134, reviewsWritten: 38, collectionsValue: 15000 } },
+  { rank: 6, id: '6', username: 'GinEnthusiast', avatar: '🌿', xp: 54200, level: 25, badges: ['🍸', '🌿'], streak: 11, joinedAt: '2023-06-01', stats: { gamesPlayed: 212, spiritsTasted: 98, reviewsWritten: 29, collectionsValue: 12000 } },
+  { rank: 7, id: '7', username: 'CognacConnoisseur', avatar: '🍇', xp: 48900, level: 23, badges: ['🇫🇷', '🍷'], streak: 8, joinedAt: '2023-07-14', stats: { gamesPlayed: 187, spiritsTasted: 87, reviewsWritten: 24, collectionsValue: 28000 } },
+  { rank: 8, id: '8', username: 'VodkaPurist', avatar: '❄️', xp: 42100, level: 21, badges: ['🇷🇺', '❄️'], streak: 6, joinedAt: '2023-08-22', stats: { gamesPlayed: 156, spiritsTasted: 72, reviewsWritten: 18, collectionsValue: 8000 } },
+  { rank: 9, id: '9', username: 'MezcalMaven', avatar: '🌵', xp: 38500, level: 19, badges: ['🔥', '💨'], streak: 12, joinedAt: '2023-09-10', stats: { gamesPlayed: 134, spiritsTasted: 65, reviewsWritten: 21, collectionsValue: 9500 } },
+  { rank: 10, id: '10', username: 'BarrelHunter', avatar: '🛢️', xp: 35200, level: 18, badges: ['🎯', '🔍'], streak: 5, joinedAt: '2023-10-05', stats: { gamesPlayed: 112, spiritsTasted: 58, reviewsWritten: 15, collectionsValue: 67000 } },
 ];
 
-type SortKey = 'xp' | 'spirits_tried' | 'quizzes_completed' | 'achievements' | 'streak_days';
+const TIME_PERIODS = ['all-time', 'monthly', 'weekly', 'daily'] as const;
+const CATEGORIES = ['overall', 'games', 'tasting', 'reviews', 'collection'] as const;
+
+// ============================================
+// LEADERBOARD PAGE
+// ============================================
 
 export default function LeaderboardPage() {
-  const [leaderboard] = useState<LeaderboardEntry[]>(SAMPLE_LEADERBOARD);
-  const [sortBy, setSortBy] = useState<SortKey>('xp');
-  const [timeframe, setTimeframe] = useState('all-time');
+  const [period, setPeriod] = useState<typeof TIME_PERIODS[number]>('all-time');
+  const [category, setCategory] = useState<typeof CATEGORIES[number]>('overall');
+  const [players, setPlayers] = useState<Player[]>(LEADERBOARD_DATA);
+  const [loading, setLoading] = useState(false);
+  const [userRank, setUserRank] = useState<Player | null>(null);
 
-  const sortedLeaderboard = [...leaderboard].sort((a, b) => b[sortBy] - a[sortBy]).map((entry, i) => ({ ...entry, rank: i + 1 }));
+  // Simulate loading leaderboard
+  useEffect(() => {
+    setLoading(true);
+    // In production, fetch from API
+    setTimeout(() => {
+      setPlayers(LEADERBOARD_DATA);
+      // Simulate user's own rank
+      setUserRank({
+        rank: 156,
+        id: 'current-user',
+        username: 'You',
+        avatar: '😎',
+        xp: 3450,
+        level: 8,
+        badges: ['🌟'],
+        streak: 5,
+        joinedAt: '2024-11-01',
+        stats: { gamesPlayed: 47, spiritsTasted: 23, reviewsWritten: 8, collectionsValue: 2500 },
+      });
+      setLoading(false);
+    }, 500);
+  }, [period, category]);
 
-  const getRankStyle = (rank: number) => {
-    switch (rank) {
-      case 1: return 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-yellow-500/50';
-      case 2: return 'bg-gradient-to-r from-gray-400/20 to-gray-300/20 border-gray-400/40';
-      case 3: return 'bg-gradient-to-r from-orange-700/20 to-orange-600/20 border-orange-600/40';
-      default: return 'bg-gray-800/50 border-amber-500/10';
-    }
+  const getRankBadge = (rank: number) => {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return `#${rank}`;
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-    return num.toString();
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toLocaleString();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-amber-950/20 to-gray-900">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-900/40 via-amber-800/30 to-amber-900/40 border-b border-amber-500/20">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <Link href="/" className="text-amber-400 hover:text-amber-300 mb-4 inline-flex items-center gap-2">
-            ← Back to BarrelVerse
+      <header className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-white">
+            <span className="text-2xl">🥃</span>
+            <span className="font-bold">CravBarrels</span>
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-amber-100 mt-4">
-            🏆 Hall of Fame
-          </h1>
-          <p className="text-amber-200/70 text-lg mt-2">
-            Top whiskey connoisseurs in the BarrelVerse
-          </p>
+          <h1 className="text-xl font-bold text-white">Leaderboard</h1>
+          <Link href="/games" className="text-amber-500 hover:text-amber-400">
+            🎮 Games
+          </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Top 3 Podium */}
-        <div className="grid grid-cols-3 gap-4 mb-12">
-          {/* Second Place */}
-          <div className="mt-8">
-            <div className="bg-gradient-to-b from-gray-400/20 to-gray-500/10 rounded-xl p-6 text-center border border-gray-400/30">
-              <div className="text-4xl mb-2">🥈</div>
-              <div className="w-16 h-16 mx-auto bg-gray-600 rounded-full mb-2 flex items-center justify-center text-2xl">
-                {sortedLeaderboard[1]?.username[0]}
+        <section className="mb-12">
+          <div className="flex items-end justify-center gap-4">
+            {/* Second Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-center"
+            >
+              <div className="w-20 h-20 mx-auto bg-gray-700 rounded-full flex items-center justify-center text-4xl mb-2 border-4 border-gray-500">
+                {players[1]?.avatar}
               </div>
-              <h3 className="text-lg font-bold text-gray-200">{sortedLeaderboard[1]?.username}</h3>
-              <p className="text-gray-400 text-sm">Level {sortedLeaderboard[1]?.level}</p>
-              <p className="text-amber-400 font-bold mt-2">{formatNumber(sortedLeaderboard[1]?.[sortBy] || 0)}</p>
-            </div>
-          </div>
-          
-          {/* First Place */}
-          <div>
-            <div className="bg-gradient-to-b from-yellow-500/30 to-amber-600/20 rounded-xl p-6 text-center border border-yellow-500/50 transform scale-105">
-              <div className="text-5xl mb-2">👑</div>
-              <div className="w-20 h-20 mx-auto bg-amber-600 rounded-full mb-2 flex items-center justify-center text-3xl">
-                {sortedLeaderboard[0]?.username[0]}
+              <div className="text-gray-400 text-sm">{players[1]?.username}</div>
+              <div className="text-amber-500 font-bold">{formatNumber(players[1]?.xp || 0)} XP</div>
+              <div className="w-24 h-24 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t-lg mt-2 flex items-center justify-center">
+                <span className="text-4xl">🥈</span>
               </div>
-              <h3 className="text-xl font-bold text-amber-100">{sortedLeaderboard[0]?.username}</h3>
-              <p className="text-amber-300 text-sm">Level {sortedLeaderboard[0]?.level}</p>
-              <p className="text-yellow-400 font-bold text-xl mt-2">{formatNumber(sortedLeaderboard[0]?.[sortBy] || 0)}</p>
-            </div>
-          </div>
-          
-          {/* Third Place */}
-          <div className="mt-8">
-            <div className="bg-gradient-to-b from-orange-700/20 to-orange-800/10 rounded-xl p-6 text-center border border-orange-600/30">
-              <div className="text-4xl mb-2">🥉</div>
-              <div className="w-16 h-16 mx-auto bg-orange-700 rounded-full mb-2 flex items-center justify-center text-2xl">
-                {sortedLeaderboard[2]?.username[0]}
+            </motion.div>
+
+            {/* First Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center"
+            >
+              <div className="w-28 h-28 mx-auto bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-5xl mb-2 border-4 border-amber-400 shadow-lg shadow-amber-500/30">
+                {players[0]?.avatar}
               </div>
-              <h3 className="text-lg font-bold text-orange-200">{sortedLeaderboard[2]?.username}</h3>
-              <p className="text-orange-400 text-sm">Level {sortedLeaderboard[2]?.level}</p>
-              <p className="text-amber-400 font-bold mt-2">{formatNumber(sortedLeaderboard[2]?.[sortBy] || 0)}</p>
-            </div>
+              <div className="text-white font-bold text-lg">{players[0]?.username}</div>
+              <div className="text-amber-500 font-bold text-xl">{formatNumber(players[0]?.xp || 0)} XP</div>
+              <div className="w-28 h-32 bg-gradient-to-t from-amber-600 to-amber-500 rounded-t-lg mt-2 flex items-center justify-center">
+                <span className="text-5xl">🏆</span>
+              </div>
+            </motion.div>
+
+            {/* Third Place */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="w-20 h-20 mx-auto bg-gray-700 rounded-full flex items-center justify-center text-4xl mb-2 border-4 border-amber-700">
+                {players[2]?.avatar}
+              </div>
+              <div className="text-gray-400 text-sm">{players[2]?.username}</div>
+              <div className="text-amber-500 font-bold">{formatNumber(players[2]?.xp || 0)} XP</div>
+              <div className="w-24 h-20 bg-gradient-to-t from-amber-800 to-amber-700 rounded-t-lg mt-2 flex items-center justify-center">
+                <span className="text-4xl">🥉</span>
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* Filters */}
-        <div className="bg-gray-800/50 rounded-xl p-6 border border-amber-500/10 mb-8">
-          <div className="flex flex-wrap gap-4 justify-between items-center">
-            <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {TIME_PERIODS.map((p) => (
               <button
-                onClick={() => setSortBy('xp')}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'xp' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-amber-200/60 hover:text-amber-200'}`}
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  period === p
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
               >
-                XP
+                {p.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </button>
+            ))}
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {CATEGORIES.map((c) => (
               <button
-                onClick={() => setSortBy('spirits_tried')}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'spirits_tried' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-amber-200/60 hover:text-amber-200'}`}
+                key={c}
+                onClick={() => setCategory(c)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  category === c
+                    ? 'bg-gray-700 text-white'
+                    : 'bg-gray-800 text-gray-500 hover:bg-gray-700'
+                }`}
               >
-                Spirits
+                {c.charAt(0).toUpperCase() + c.slice(1)}
               </button>
-              <button
-                onClick={() => setSortBy('quizzes_completed')}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'quizzes_completed' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-amber-200/60 hover:text-amber-200'}`}
-              >
-                Quizzes
-              </button>
-              <button
-                onClick={() => setSortBy('achievements')}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'achievements' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-amber-200/60 hover:text-amber-200'}`}
-              >
-                Achievements
-              </button>
-              <button
-                onClick={() => setSortBy('streak_days')}
-                className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'streak_days' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-amber-200/60 hover:text-amber-200'}`}
-              >
-                🔥 Streak
-              </button>
-            </div>
-            
-            <select
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
-              className="bg-gray-900/50 border border-amber-500/20 rounded-lg px-4 py-2 text-amber-100 focus:border-amber-500 focus:outline-none"
-            >
-              <option value="all-time">All Time</option>
-              <option value="monthly">This Month</option>
-              <option value="weekly">This Week</option>
-            </select>
+            ))}
           </div>
         </div>
+
+        {/* Your Rank Card */}
+        {userRank && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-2xl p-4 mb-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl font-bold text-amber-500">#{userRank.rank}</div>
+                <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-2xl">
+                  {userRank.avatar}
+                </div>
+                <div>
+                  <div className="font-bold text-white">{userRank.username}</div>
+                  <div className="text-sm text-gray-400">Level {userRank.level}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-bold text-amber-500">{formatNumber(userRank.xp)} XP</div>
+                <div className="text-sm text-gray-400">🔥 {userRank.streak} day streak</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Leaderboard Table */}
-        <div className="space-y-3">
-          {sortedLeaderboard.map((entry) => (
-            <div
-              key={entry.username}
-              className={`rounded-xl p-4 border ${getRankStyle(entry.rank)} transition-all hover:scale-[1.02]`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 text-center">
-                  <span className="text-2xl font-bold text-amber-100">
-                    {entry.rank <= 3 ? entry.badge : `#${entry.rank}`}
-                  </span>
-                </div>
-                
-                <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl">
-                  {entry.username[0]}
-                </div>
-                
-                <div className="flex-1">
-                  <h3 className="font-bold text-amber-100 flex items-center gap-2">
-                    {entry.username}
-                    {entry.badge && entry.rank > 3 && <span>{entry.badge}</span>}
-                  </h3>
-                  <p className="text-amber-200/60 text-sm">Level {entry.level}</p>
-                </div>
-                
-                <div className="grid grid-cols-5 gap-6 text-center">
-                  <div>
-                    <p className={`font-bold ${sortBy === 'xp' ? 'text-amber-400' : 'text-amber-100'}`}>{formatNumber(entry.xp)}</p>
-                    <p className="text-amber-200/40 text-xs">XP</p>
-                  </div>
-                  <div>
-                    <p className={`font-bold ${sortBy === 'spirits_tried' ? 'text-amber-400' : 'text-amber-100'}`}>{entry.spirits_tried}</p>
-                    <p className="text-amber-200/40 text-xs">Spirits</p>
-                  </div>
-                  <div>
-                    <p className={`font-bold ${sortBy === 'quizzes_completed' ? 'text-amber-400' : 'text-amber-100'}`}>{entry.quizzes_completed}</p>
-                    <p className="text-amber-200/40 text-xs">Quizzes</p>
-                  </div>
-                  <div>
-                    <p className={`font-bold ${sortBy === 'achievements' ? 'text-amber-400' : 'text-amber-100'}`}>{entry.achievements}</p>
-                    <p className="text-amber-200/40 text-xs">🏅</p>
-                  </div>
-                  <div>
-                    <p className={`font-bold ${sortBy === 'streak_days' ? 'text-amber-400' : 'text-amber-100'}`}>{entry.streak_days}🔥</p>
-                    <p className="text-amber-200/40 text-xs">Streak</p>
-                  </div>
-                </div>
-              </div>
+        <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin text-4xl mb-4">🏆</div>
+              <div className="text-gray-400">Loading leaderboard...</div>
             </div>
-          ))}
+          ) : (
+            <div className="divide-y divide-gray-700">
+              {players.map((player, idx) => (
+                <motion.div
+                  key={player.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`p-4 hover:bg-gray-700/50 transition-colors ${
+                    player.rank <= 3 ? 'bg-gray-700/30' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Rank */}
+                    <div className="w-12 text-center">
+                      <span className={`text-xl ${player.rank <= 3 ? '' : 'text-gray-500'}`}>
+                        {getRankBadge(player.rank)}
+                      </span>
+                    </div>
+
+                    {/* Avatar */}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                      player.rank === 1 ? 'bg-amber-500/20 ring-2 ring-amber-500' :
+                      player.rank === 2 ? 'bg-gray-500/20 ring-2 ring-gray-400' :
+                      player.rank === 3 ? 'bg-amber-700/20 ring-2 ring-amber-700' :
+                      'bg-gray-700'
+                    }`}>
+                      {player.avatar}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{player.username}</span>
+                        {player.badges.slice(0, 3).map((badge, i) => (
+                          <span key={i} className="text-sm">{badge}</span>
+                        ))}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Level {player.level} • 🔥 {player.streak} day streak
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="hidden md:flex gap-8 text-center">
+                      <div>
+                        <div className="text-sm text-gray-500">Games</div>
+                        <div className="font-medium text-white">{player.stats.gamesPlayed}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500">Tasted</div>
+                        <div className="font-medium text-white">{player.stats.spiritsTasted}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-500">Reviews</div>
+                        <div className="font-medium text-white">{player.stats.reviewsWritten}</div>
+                      </div>
+                    </div>
+
+                    {/* XP */}
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-amber-500">{formatNumber(player.xp)}</div>
+                      <div className="text-xs text-gray-500">XP</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Your Position */}
-        <div className="mt-8 bg-gradient-to-r from-amber-600/20 to-amber-500/10 rounded-xl p-6 border border-amber-500/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-amber-600 rounded-full flex items-center justify-center text-2xl">
-                Y
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-amber-100">Your Position</h3>
-                <p className="text-amber-200/60">Sign in to see your ranking</p>
-              </div>
-            </div>
-            <Link
-              href="/auth"
-              className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-lg transition-colors"
-            >
-              Sign In to Compete
-            </Link>
-          </div>
+        {/* Load More */}
+        <div className="text-center mt-6">
+          <button className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium transition-colors">
+            Load More Rankings
+          </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
