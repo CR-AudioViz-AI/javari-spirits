@@ -2,6 +2,9 @@ import Script from 'next/script';
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import EcosystemNav from '@/components/ecosystem/EcosystemNav'
+import EcosystemFooter from '@/components/ecosystem/EcosystemFooter'
+
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,7 +33,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen min-h-[100dvh]`}>
         <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-gray-50 to-gray-100">
-          {children}
+          <EcosystemNav appName="Javari Spirits" />{children}<EcosystemFooter />
         </div>
         <Script src="https://javariai.com/embed.js" strategy="lazyOnload" />
       </body>
