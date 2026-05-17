@@ -6,7 +6,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'CRAVBarrels - Premium Spirit Collection & Discovery | 22,000+ Spirits',
+  title: 'Javari Spirits - Premium Spirit Collection & Discovery | 22,000+ Spirits',
   description: 'Part of the CR AudioViz AI creative ecosystem',
 }
 
