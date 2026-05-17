@@ -1,41 +1,33 @@
-import Script from 'next/script';
-import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+// app/layout.tsx — Javari Spirits
+// Fortune 50 quality — uses AppShell for full ecosystem integration
+// May 17, 2026 — CR AudioViz AI, LLC
+import type { Metadata } from 'next'
 import './globals.css'
-import EcosystemNav from '@/components/ecosystem/EcosystemNav'
-import EcosystemFooter from '@/components/ecosystem/EcosystemFooter'
-
-
-const inter = Inter({ subsets: ['latin'] })
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Javari Spirits - Premium Spirit Collection & Discovery | 22,000+ Spirits',
-  description: 'Part of the CR AudioViz AI creative ecosystem',
+  title: 'Javari Spirits | Javari by CR AudioViz AI',
+  description: 'Premium spirits collection tracker with AI',
+  keywords: 'Javari Spirits, Javari, AI, CR AudioViz AI',
 }
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  viewportFit: 'cover',
-}
+import AppShell from '@/components/AppShell'
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="format-detection" content="telephone=no" />
-      </head>
-      <body className={`${inter.className} min-h-screen min-h-[100dvh]`}>
-        <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-gray-50 to-gray-100">
-          <EcosystemNav appName="Javari Spirits" />{children}<EcosystemFooter />
-        </div>
-        <Script src="https://javariai.com/embed.js" strategy="lazyOnload" />
+      <body style={{ margin: 0, padding: 0 }}>
+        <AppShell
+          appName="Javari Spirits"
+          appColor="#f59e0b"
+          appEmoji="🥃"
+          appDesc="Premium spirits collection tracker with AI"
+      handoffApp="Javari Cards"
+      handoffUrl="https://javaricards.com"
+      handoffPitch="Also collect trading cards? Track them here →"
+        >
+          {children}
+        </AppShell>
       </body>
     </html>
   )
