@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
                 currency: 'usd',
                 product_data: {
                   name: `${pkg.credits} AI Credits`,
-                  description: `One-time purchase of ${pkg.credits} AI credits for CravBarrels`,
+                  description: `One-time purchase of ${pkg.credits} AI credits for Javari Spirits`,
                 },
                 unit_amount: pkg.price,
               },
