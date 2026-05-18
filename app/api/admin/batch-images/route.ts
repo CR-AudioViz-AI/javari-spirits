@@ -61,7 +61,7 @@ async function searchOpenFoodFacts(name: string, upc?: string): Promise<ImageSea
     if (upc && upc.length >= 8) {
       const barcodeUrl = `https://world.openfoodfacts.org/api/v0/product/${upc}.json`;
       const barcodeResponse = await fetch(barcodeUrl, {
-        headers: { 'User-Agent': 'CRAVBarrels/1.0' },
+        headers: { 'User-Agent': 'Javari Spirits/1.0' },
         signal: AbortSignal.timeout(3000)
       });
       
@@ -83,7 +83,7 @@ async function searchOpenFoodFacts(name: string, upc?: string): Promise<ImageSea
     const searchUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${searchQuery}&search_simple=1&action=process&json=1&page_size=3`;
     
     const response = await fetch(searchUrl, {
-      headers: { 'User-Agent': 'CRAVBarrels/1.0' },
+      headers: { 'User-Agent': 'Javari Spirits/1.0' },
       signal: AbortSignal.timeout(4000)
     });
     
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
           limit: 'Batch size (default: 50, max: 200)',
           dryRun: 'Preview without saving (default: false)'
         },
-        example: `curl -X POST "https://cravbarrels.com/api/admin/batch-images" -H "X-Admin-Key: ${ADMIN_API_KEY}" -H "Content-Type: application/json" -d '{"category":"bourbon","limit":100}'`
+        example: `curl -X POST "https://javarispirits.com/api/admin/batch-images" -H "X-Admin-Key: ${ADMIN_API_KEY}" -H "Content-Type: application/json" -d '{"category":"bourbon","limit":100}'`
       }
     });
     
