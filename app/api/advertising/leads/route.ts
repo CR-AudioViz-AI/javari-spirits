@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send notification email to advertising team
     // await sendNotificationEmail({
-    //   to: 'advertising@cravbarrels.com',
+    //   to: 'advertising@javarispirits.com',
     //   subject: `New Advertising Lead: ${company}`,
     //   body: `New lead from ${name} at ${company}...`
     // });
