@@ -21,7 +21,7 @@ async function searchWikimedia(spiritName: string, brand?: string): Promise<Imag
   try {
     const response = await fetch(
       `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerms)}&srnamespace=6&srlimit=3&format=json&origin=*`,
-      { headers: { 'User-Agent': 'CRAVBarrels/1.0' } }
+      { headers: { 'User-Agent': 'Javari Spirits/1.0' } }
     );
     if (!response.ok) return [];
     const data = await response.json();
@@ -38,7 +38,7 @@ async function getWikiImageInfo(fileTitle: string): Promise<ImageResult | null> 
   try {
     const response = await fetch(
       `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url|size&format=json&origin=*`,
-      { headers: { 'User-Agent': 'CRAVBarrels/1.0' } }
+      { headers: { 'User-Agent': 'Javari Spirits/1.0' } }
     );
     if (!response.ok) return null;
     const data = await response.json();
