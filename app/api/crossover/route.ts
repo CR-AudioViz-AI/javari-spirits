@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// CRAVBarrels <-> CRAVCards Crossover API
+// Javari Spirits <-> CRAVCards Crossover API
 // Allows shared users to access both platforms with single sign-on
 
 export async function GET(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
           .single();
         
         return NextResponse.json({
-          source: 'cravbarrels',
+          source: 'javarispirits',
           profile,
           crossover: {
             barrels: true,
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json({ 
           available_actions: ['profile', 'achievements', 'subscription'],
-          message: 'CRAVBarrels Crossover API v1.0'
+          message: 'Javari Spirits Crossover API v1.0'
         });
     }
   } catch (error) {
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         });
 
       case 'link_accounts':
-        // Link CRAVBarrels account with CRAVCards
+        // Link Javari Spirits account with CRAVCards
         // In production, this would verify with CRAVCards API
         return NextResponse.json({
           success: true,
