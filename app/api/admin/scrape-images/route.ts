@@ -64,7 +64,7 @@ async function searchOpenFoodFacts(name: string, upc?: string): Promise<ImageSea
     if (upc && upc.length >= 8) {
       const barcodeUrl = `https://world.openfoodfacts.org/api/v0/product/${upc}.json`;
       const barcodeResponse = await fetch(barcodeUrl, {
-        headers: { 'User-Agent': 'CRAVBarrels/1.0 (contact@craudiovizai.com)' },
+        headers: { 'User-Agent': 'Javari Spirits/1.0 (contact@craudiovizai.com)' },
         signal: AbortSignal.timeout(5000)
       });
       
@@ -86,7 +86,7 @@ async function searchOpenFoodFacts(name: string, upc?: string): Promise<ImageSea
     const searchUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${searchQuery}&search_simple=1&action=process&json=1&page_size=5`;
     
     const searchResponse = await fetch(searchUrl, {
-      headers: { 'User-Agent': 'CRAVBarrels/1.0 (contact@craudiovizai.com)' },
+      headers: { 'User-Agent': 'Javari Spirits/1.0 (contact@craudiovizai.com)' },
       signal: AbortSignal.timeout(8000)
     });
     
@@ -147,7 +147,7 @@ async function searchDistiller(name: string, brand?: string): Promise<ImageSearc
     
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; CRAVBarrels/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; Javari Spirits/1.0)',
         'Accept': 'text/html'
       },
       signal: AbortSignal.timeout(5000)
@@ -197,7 +197,7 @@ async function searchMasterOfMalt(name: string): Promise<ImageSearchResult | nul
     
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; CRAVBarrels/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; Javari Spirits/1.0)',
         'Accept': 'text/html'
       },
       signal: AbortSignal.timeout(5000)
@@ -268,7 +268,7 @@ async function searchWikimedia(name: string, brand?: string): Promise<ImageSearc
     const url = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${searchTerm}%20bottle&srnamespace=6&srlimit=3&format=json`;
     
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'CRAVBarrels/1.0' },
+      headers: { 'User-Agent': 'Javari Spirits/1.0' },
       signal: AbortSignal.timeout(5000)
     });
     
@@ -283,7 +283,7 @@ async function searchWikimedia(name: string, brand?: string): Promise<ImageSearc
         // Get image info
         const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&format=json`;
         const imageInfoResponse = await fetch(imageInfoUrl, {
-          headers: { 'User-Agent': 'CRAVBarrels/1.0' },
+          headers: { 'User-Agent': 'Javari Spirits/1.0' },
           signal: AbortSignal.timeout(3000)
         });
         
