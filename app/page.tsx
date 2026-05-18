@@ -93,7 +93,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-amber-500 flex items-center gap-2">
             <span className="text-3xl">🥃</span>
-            <span>CravBarrels</span>
+            <span>Javari Spirits</span>
           </Link>
           
           <nav className="hidden lg:flex items-center gap-8">
