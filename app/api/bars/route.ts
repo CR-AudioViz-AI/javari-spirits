@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   try {
     if (search) {
       const geoRes = await fetch(OSM_APIS.geocode(search), {
-        headers: { "User-Agent": "CRAVBarrels/1.0" },
+        headers: { "User-Agent": "Javari Spirits/1.0" },
         signal: AbortSignal.timeout(10000),
       });
       const geoData = await geoRes.json();
