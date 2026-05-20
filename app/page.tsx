@@ -46,6 +46,8 @@ const CATEGORIES = [
 export default function HomePage() {
   const [currentStat, setCurrentStat] = useState(0)
   const [scrollY, setScrollY] = useState(0)
+  const [liveStats, setLiveStats] = useState({ totalSpirits: 22951, totalCollectors: 15234, bottlesTracked: 89432, collectionValue: 12500000 })
+  const [featuredSpirits, setFeaturedSpirits] = useState([])
   
   const stats = [
     { value: liveStats.totalSpirits.toLocaleString() + '+', label: 'Spirits in Database' },
@@ -65,6 +67,25 @@ export default function HomePage() {
     const handleScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+  useEffect(() => {
+    fetch('/api/spirits?limit=6&sort=rating')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setFeaturedSpirits(data.map(s => ({
+            id: String(s.id || Math.random()),
+            name: s.name || 'Unknown Spirit',
+            brand: s.brand || s.distillery || '',
+            rating: s.rating || s.average_rating || 0,
+            msrp: s.msrp || s.retail_price || 0,
+            market: s.market_price || s.msrp || 0,
+            image: s.image_url || 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&q=80',
+            category: s.category || s.spirit_type || 'whiskey',
+          })))
+        }
+      })
+      .catch(() => {})
   }, [])
 
   return (
