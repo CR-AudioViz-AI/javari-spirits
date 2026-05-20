@@ -162,7 +162,7 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
               <span>© {currentYear} CravBarrels. All rights reserved.</span>
               <span className="hidden md:inline">•</span>
-              <span>A CR AudioViz AI Product</span>
+              <span>A CR AudioViz AI Product · EIN: 39-3646201</span>
             </div>
             
             <div className="flex flex-wrap items-center gap-6 text-sm">
