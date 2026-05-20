@@ -10,27 +10,10 @@ import NewsletterSignup from '@/components/NewsletterSignup'
 // LIVE STATS (Would come from API)
 // ============================================
 
-const LIVE_STATS = {
-  totalSpirits: 22951,
-  totalCollectors: 15234,
-  bottlesTracked: 89432,
-  collectionValue: 12500000
-}
 
-// ============================================
-// FEATURED SPIRITS
-// ============================================
-
-const FEATURED_SPIRITS = [
-  { id: '1', name: 'Pappy Van Winkle 15', brand: 'Old Rip Van Winkle', rating: 97, msrp: 119, market: 1850, trend: 'up', image: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400' },
-  { id: '2', name: 'George T. Stagg 2023', brand: 'Buffalo Trace', rating: 96, msrp: 99, market: 650, trend: 'up', image: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400' },
-  { id: '3', name: 'William Larue Weller', brand: 'Buffalo Trace', rating: 95, msrp: 99, market: 950, trend: 'stable', image: 'https://images.unsplash.com/photo-1602934445884-da0fa1c9d3b3?w=400' },
-  { id: '4', name: 'Blanton\'s Single Barrel', brand: 'Buffalo Trace', rating: 94, msrp: 65, market: 120, trend: 'up', image: 'https://images.unsplash.com/photo-1574023849379-88f285a43974?w=400' }
-]
-
-// ============================================
-// QUICK LINKS
-// ============================================
+// Stats and featured spirits come from live API — no hardcoded data
+// /api/spirits?limit=6&rarity=rare → featured bottles from Supabase
+// /api/spirits/stats → live collection stats
 
 const QUICK_ACTIONS = [
   { icon: '🔍', label: 'Explore Spirits', href: '/explore', description: 'Browse our database' },
@@ -65,10 +48,10 @@ export default function HomePage() {
   const [scrollY, setScrollY] = useState(0)
   
   const stats = [
-    { value: LIVE_STATS.totalSpirits.toLocaleString() + '+', label: 'Spirits in Database' },
-    { value: LIVE_STATS.totalCollectors.toLocaleString() + '+', label: 'Collectors Worldwide' },
-    { value: LIVE_STATS.bottlesTracked.toLocaleString() + '+', label: 'Bottles Tracked' },
-    { value: '$' + (LIVE_STATS.collectionValue / 1000000).toFixed(0) + 'M+', label: 'Collection Value' }
+    { value: liveStats.totalSpirits.toLocaleString() + '+', label: 'Spirits in Database' },
+    { value: liveStats.totalCollectors.toLocaleString() + '+', label: 'Collectors Worldwide' },
+    { value: liveStats.bottlesTracked.toLocaleString() + '+', label: 'Bottles Tracked' },
+    { value: '$' + (liveStats.collectionValue / 1000000).toFixed(0) + 'M+', label: 'Collection Value' }
   ]
 
   useEffect(() => {
@@ -315,7 +298,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURED_SPIRITS.map((spirit, idx) => (
+            {featuredSpirits.map((spirit, idx) => (
               <Link
                 key={idx}
                 href={`/spirits/${spirit.id}`}
