@@ -19,7 +19,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <span className="text-3xl">🥃</span>
-              <span className="text-xl font-bold text-white">CravBarrels</span>
+              <span className="text-xl font-bold text-white">Javari Spirits</span>
             </Link>
             <p className="text-gray-400 mb-6">
               Your ultimate guide to discovering, learning, and enjoying the world's finest spirits.
@@ -160,7 +160,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              <span>© {currentYear} CravBarrels. All rights reserved.</span>
+              <span>© {currentYear} Javari Spirits. All rights reserved.</span>
               <span className="hidden md:inline">•</span>
               <span>A CR AudioViz AI Product · EIN: 39-3646201</span>
             </div>
