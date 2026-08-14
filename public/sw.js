@@ -1,10 +1,10 @@
-// CravBarrels Service Worker
+// Javari Spirits Service Worker
 // Version: 1.0.0
 
-const CACHE_NAME = 'cravbarrels-v1';
-const STATIC_CACHE = 'cravbarrels-static-v1';
-const DYNAMIC_CACHE = 'cravbarrels-dynamic-v1';
-const IMAGE_CACHE = 'cravbarrels-images-v1';
+const CACHE_NAME = 'javarispirits-v1';
+const STATIC_CACHE = 'javarispirits-static-v1';
+const DYNAMIC_CACHE = 'javarispirits-dynamic-v1';
+const IMAGE_CACHE = 'javarispirits-images-v1';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -49,7 +49,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames
             .filter((name) => {
-              return name.startsWith('cravbarrels-') && 
+              return name.startsWith('javarispirits-') && 
                      name !== STATIC_CACHE && 
                      name !== DYNAMIC_CACHE &&
                      name !== IMAGE_CACHE;
@@ -194,7 +194,7 @@ async function updateCache(request, cacheName) {
 self.addEventListener('push', (event) => {
   console.log('[SW] Push notification received');
   
-  let data = { title: 'CravBarrels', body: 'New update available!' };
+  let data = { title: 'Javari Spirits', body: 'New update available!' };
   
   if (event.data) {
     try {

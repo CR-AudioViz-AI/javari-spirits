@@ -1,4 +1,4 @@
--- CRAVBarrels Database Migration
+-- Javari Spirits Database Migration
 -- Auto-generated: December 14, 2025
 -- Run this in Supabase SQL Editor
 

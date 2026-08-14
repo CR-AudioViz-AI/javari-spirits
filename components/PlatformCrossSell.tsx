@@ -28,7 +28,7 @@ const PLATFORM_APPS: PlatformApp[] = [
   },
   {
     id: 'games',
-    name: 'CRAV Games',
+    name: 'javari Games',
     tagline: '1,200+ Free Games',
     icon: '🎮',
     url: `${PLATFORM_URL}/apps/games`,

@@ -23,7 +23,7 @@ const supabase = createClient(
 // ============================================
 
 const EMAIL_TEMPLATES = {
-  welcome_day0: { subject: '🥃 Welcome to CravBarrels!', delay: 0 },
+  welcome_day0: { subject: '🥃 Welcome to Javari Spirits!', delay: 0 },
   welcome_day1: { subject: '🔍 Discover Your First Spirit', delay: 86400000 },
   welcome_day3: { subject: '🍸 Meet Your AI Cocktail Genius', delay: 259200000 },
   welcome_day7: { subject: '🎮 Ready to Play? Try Spirit Trivia!', delay: 604800000 },
@@ -35,7 +35,7 @@ const EMAIL_TEMPLATES = {
   weekly_digest: { subject: '📰 This Week in Spirits', delay: 0 },
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cravbarrels.com';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://javarispirits.com';
 
 // ============================================
 // GENERATE EMAIL HTML
@@ -45,13 +45,13 @@ function generateEmailHTML(template: string, data: any): string {
   const header = `
     <div style="text-align: center; margin-bottom: 30px;">
       <span style="font-size: 48px;">🥃</span>
-      <h1 style="color: #f59e0b; margin: 10px 0 0 0; font-size: 24px;">CravBarrels</h1>
+      <h1 style="color: #f59e0b; margin: 10px 0 0 0; font-size: 24px;">Javari Spirits</h1>
     </div>
   `;
 
   const footer = `
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #374151; color: #6b7280; font-size: 12px;">
-      <p style="margin: 0;">CravBarrels • A CR AudioViz AI Platform</p>
+      <p style="margin: 0;">Javari Spirits • A CR AudioViz AI Platform</p>
       <p style="margin: 10px 0 0 0;">
         <a href="${BASE_URL}/unsubscribe?email=${data.email}" style="color: #6b7280;">Unsubscribe</a> • 
         <a href="${BASE_URL}/preferences" style="color: #6b7280;">Email Preferences</a>
@@ -115,7 +115,7 @@ function generateEmailHTML(template: string, data: any): string {
     welcome_day3: `
       <h2 style="color: #e5e7eb; margin: 0 0 20px 0;">🍸 Meet Your AI Cocktail Genius</h2>
       <p style="color: #9ca3af; line-height: 1.6;">
-        Did you know CravBarrels has an AI bartender? Just tell it what spirits you have, and it'll create the perfect cocktail for you!
+        Did you know Javari Spirits has an AI bartender? Just tell it what spirits you have, and it'll create the perfect cocktail for you!
       </p>
       <div style="background: #374151; border-radius: 12px; padding: 20px; margin: 25px 0;">
         <p style="color: #e5e7eb; margin: 0; font-style: italic;">
@@ -244,7 +244,7 @@ function generateEmailHTML(template: string, data: any): string {
       </div>
       <div style="text-align: center;">
         <a href="${BASE_URL}" style="display: inline-block; background: #f59e0b; color: #000; padding: 14px 35px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-          Explore CravBarrels
+          Explore Javari Spirits
         </a>
       </div>
     `,
@@ -258,7 +258,7 @@ function generateEmailHTML(template: string, data: any): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${EMAIL_TEMPLATES[template as keyof typeof EMAIL_TEMPLATES]?.subject || 'CravBarrels'}</title>
+  <title>${EMAIL_TEMPLATES[template as keyof typeof EMAIL_TEMPLATES]?.subject || 'Javari Spirits'}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #111827; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
@@ -311,7 +311,7 @@ export async function POST(request: NextRequest) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'CravBarrels <hello@cravbarrels.com>',
+              from: 'Javari Spirits <hello@javarispirits.com>',
               to: email,
               subject: templateConfig.subject,
               html,
@@ -395,9 +395,9 @@ export async function POST(request: NextRequest) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'CravBarrels <hello@cravbarrels.com>',
+              from: 'Javari Spirits <hello@javarispirits.com>',
               to: email,
-              subject: '🥃 Welcome to CravBarrels!',
+              subject: '🥃 Welcome to Javari Spirits!',
               html,
             }),
           });
@@ -436,9 +436,9 @@ export async function POST(request: NextRequest) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                from: 'CravBarrels <hello@cravbarrels.com>',
+                from: 'Javari Spirits <hello@javarispirits.com>',
                 to: queuedEmail.email,
-                subject: templateConfig?.subject || 'CravBarrels',
+                subject: templateConfig?.subject || 'Javari Spirits',
                 html,
               }),
             });

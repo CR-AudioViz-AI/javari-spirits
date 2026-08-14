@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Today in Spirits History API
+ * javari Barrels - Today in Spirits History API
  * 
  * GET /api/history/today - Get today's historical events
  * GET /api/history/date?month=MM&day=DD - Get events for specific date

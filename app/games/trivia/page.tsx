@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Spirit Trivia | CRAVBarrels',
+  title: 'Spirit Trivia | Javari Spirits',
   description: 'Test your spirits knowledge and earn proof points',
 };
 

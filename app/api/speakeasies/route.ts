@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Speakeasy Finder API
+ * javari Barrels - Speakeasy Finder API
  * 
  * GET /api/speakeasies - List/search speakeasies
  * GET /api/speakeasies/[id] - Get speakeasy details

@@ -1,5 +1,5 @@
 "use client";
-// app/page.tsx — Javari Spirits — Javari branded (not CravBarrels)
+// app/page.tsx — Javari Spirits — Javari branded (not Javari Spirits)
 // Awin Publisher ID: 2692370
 // CR AudioViz AI · EIN 39-3646201 · May 2026
 import { useState } from "react";

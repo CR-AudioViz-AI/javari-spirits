@@ -80,7 +80,7 @@ export default function DocsPage() {
           <Link href="/docs/api" className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
             🔌 API Docs
           </Link>
-          <a href="https://github.com/cravai/barrelverse" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
+          <a href="https://github.com/javariai/barrelverse" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
             📦 GitHub
           </a>
         </div>
@@ -223,7 +223,7 @@ export default function DocsPage() {
           BarrelVerse is built in the open. View the source code, report issues, or contribute.
         </p>
         <a 
-          href="https://github.com/cravai/barrelverse"
+          href="https://github.com/javariai/barrelverse"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block px-8 py-4 bg-white text-gray-900 font-bold rounded-lg hover:bg-gray-100 transition-colors"

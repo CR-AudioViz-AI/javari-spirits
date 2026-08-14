@@ -38,11 +38,11 @@ export function Navbar() {
       const urlToken = params.get('token')
       
       if (urlToken) {
-        localStorage.setItem('crav_platform_token', urlToken)
+        localStorage.setItem('javari_platform_token', urlToken)
         window.history.replaceState({}, '', window.location.pathname)
       }
 
-      const token = localStorage.getItem('crav_platform_token')
+      const token = localStorage.getItem('javari_platform_token')
       if (!token) {
         setLoading(false)
         return
@@ -59,7 +59,7 @@ export function Navbar() {
         setUser(data.user)
         setCredits(data.user.credits_balance)
       } else {
-        localStorage.removeItem('crav_platform_token')
+        localStorage.removeItem('javari_platform_token')
       }
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -74,7 +74,7 @@ export function Navbar() {
   }
 
   function handleLogout() {
-    localStorage.removeItem('crav_platform_token')
+    localStorage.removeItem('javari_platform_token')
     setUser(null)
     window.location.href = PLATFORM_URL
   }
@@ -111,7 +111,7 @@ export function Navbar() {
           </div>
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🥃</span>
-            <span className="text-xl font-bold text-amber-500">CRAVBarrels</span>
+            <span className="text-xl font-bold text-amber-500">Javari Spirits</span>
           </Link>
         </div>
 

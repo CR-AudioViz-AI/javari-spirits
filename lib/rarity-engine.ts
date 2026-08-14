@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Rarity Scoring Engine
+ * javari Barrels - Rarity Scoring Engine
  * 
  * Calculates rarity scores (0-100) for spirits based on 10 factors.
  * Used for investment insights and collection valuation.

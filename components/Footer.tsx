@@ -28,7 +28,7 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex gap-4">
               <a
-                href="https://twitter.com/cravbarrels"
+                href="https://twitter.com/javarispirits"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"
@@ -39,7 +39,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://instagram.com/cravbarrels"
+                href="https://instagram.com/javarispirits"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"
@@ -50,7 +50,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://facebook.com/cravbarrels"
+                href="https://facebook.com/javarispirits"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"
@@ -61,7 +61,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://youtube.com/@cravbarrels"
+                href="https://youtube.com/@javarispirits"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"

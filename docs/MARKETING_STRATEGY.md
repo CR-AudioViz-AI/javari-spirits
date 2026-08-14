@@ -199,7 +199,7 @@ Drop your guess below! Answer revealed tonight at 8pm. 🥃
 - **Whisky Advocate** - Major magazine
 - **Wine Enthusiast** - Broad reach
 - **Food & Wine** - Lifestyle angle
-- **Forbes** - Business angle (CRAIverse platform)
+- **Forbes** - Business angle (Javariverse platform)
 - **TechCrunch** - Tech/startup angle
 
 ### Podcast Guest Opportunities

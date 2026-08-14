@@ -107,7 +107,7 @@ export default function HistoryMuseumPage() {
           >
             <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 px-4 py-2 rounded-full text-sm mb-4">
               <BookOpen className="w-4 h-4" />
-              CRAVBarrels Museum
+              Javari Spirits Museum
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               The History of Spirits

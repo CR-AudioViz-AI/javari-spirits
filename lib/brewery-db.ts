@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Open Brewery DB Integration
+ * javari Barrels - Open Brewery DB Integration
  * 
  * Provides brewery location data for discovery features
  * https://www.openbrewerydb.org/documentation

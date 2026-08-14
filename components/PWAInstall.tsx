@@ -89,7 +89,7 @@ export default function PWAInstallPrompt() {
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-white mb-1">
-                  Install CravBarrels
+                  Install Javari Spirits
                 </h3>
                 <p className="text-gray-400 text-sm mb-3">
                   {isIOS 

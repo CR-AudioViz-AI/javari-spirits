@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Library of Congress & Chronicling America Integration
+ * Javari Barrels - Library of Congress & Chronicling America Integration
  * 
  * Provides historical content, newspaper archives, photos, and documents
  * for museum mode and "Today in Spirits History"
@@ -107,7 +107,7 @@ export async function searchLOC(
 
   const response = await fetch(`${LOC_BASE_URL}/search/?${params}`, {
     headers: {
-      'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com)'
+      'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com)'
     }
   });
 
@@ -184,7 +184,7 @@ export async function searchNewspapers(
     `${CHRONICLING_AMERICA_BASE}/search/pages/results/?${params}`,
     {
       headers: {
-        'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com)'
+        'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com)'
       }
     }
   );
@@ -223,7 +223,7 @@ export async function searchNewspapers(
 export async function getNewspaperPage(pageUrl: string): Promise<NewspaperPage | null> {
   const response = await fetch(`${pageUrl}.json`, {
     headers: {
-      'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com)'
+      'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com)'
     }
   });
 

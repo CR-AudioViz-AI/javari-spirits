@@ -259,7 +259,7 @@ export default function BarcodeScannerPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-white">
             <span className="text-2xl">🥃</span>
-            <span className="font-bold">CravBarrels</span>
+            <span className="font-bold">Javari Spirits</span>
           </Link>
           <h1 className="text-white font-semibold">Bottle Scanner</h1>
         </div>

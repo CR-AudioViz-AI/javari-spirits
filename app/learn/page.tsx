@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { GraduationCap, Clock, Award, BookOpen, Play, Lock, Star } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Learn | CRAVBarrels Academy',
+  title: 'Learn | Javari Spirits Academy',
   description: 'Master the art of spirits with our comprehensive courses',
 };
 
@@ -99,7 +99,7 @@ export default function LearnPage() {
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-2 mb-4">
           <GraduationCap className="h-10 w-10 text-amber-600" />
-          <h1 className="text-4xl font-bold">CRAVBarrels Academy</h1>
+          <h1 className="text-4xl font-bold">Javari Spirits Academy</h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Master the art of spirits with expert-led courses and earn proof points

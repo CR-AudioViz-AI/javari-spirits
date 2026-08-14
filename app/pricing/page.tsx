@@ -147,7 +147,7 @@ export default function PricingPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-white">
             <span className="text-2xl">🥃</span>
-            <span className="font-bold">CravBarrels</span>
+            <span className="font-bold">Javari Spirits</span>
           </Link>
           <Link href="/auth/login" className="text-gray-400 hover:text-white">
             Sign In

@@ -63,7 +63,7 @@ const PLATFORMS = [
     id: 'cardverse',
     name: 'CardVerse',
     description: 'Card Collecting',
-    url: 'https://crav-cardverse.vercel.app',
+    url: 'https://javari-cardverse.vercel.app',
     icon: Layers,
     color: 'from-purple-500 to-pink-500',
   },

@@ -28,7 +28,7 @@ interface BottleInfo {
   confidence: number
 }
 
-export default function CravBarrelsPage() {
+export default function Javari SpiritsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('collection')
   const [collection, setCollection] = useState<any[]>([])
   const [wishlist, setWishlist] = useState<string[]>([])
@@ -129,7 +129,7 @@ export default function CravBarrelsPage() {
                 <Wine className="w-7 h-7" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">CravBarrels</h1>
+                <h1 className="text-2xl font-bold">Javari Spirits</h1>
                 <p className="text-amber-200 text-sm">Your Spirits Collection</p>
               </div>
             </div>

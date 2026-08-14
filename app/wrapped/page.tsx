@@ -175,7 +175,7 @@ export default function WrappedPage() {
       case 'flavor-profile':
         return (
           <div className="text-center">
-            <p className="text-2xl text-gray-400 mb-4">Your palate craves</p>
+            <p className="text-2xl text-gray-400 mb-4">Your palate javaries</p>
             <p className="text-7xl font-bold mb-6">{WRAPPED_DATA.flavorProfile.dominant}</p>
             <div className="flex flex-wrap justify-center gap-3">
               {WRAPPED_DATA.flavorProfile.secondary.map((flavor, i) => (

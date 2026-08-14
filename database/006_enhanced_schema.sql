@@ -1,5 +1,5 @@
 -- ============================================================================
--- CRAV Barrels - Enhanced Database Schema
+-- javari Barrels - Enhanced Database Schema
 -- Spirit Images, History, Rarity, Learning, and Gamification
 -- ============================================================================
 
@@ -520,7 +520,7 @@ CREATE POLICY "Users can update own progress" ON user_progress FOR UPDATE USING 
 
 DO $$
 BEGIN
-  RAISE NOTICE '✅ CRAV Barrels Enhanced Schema Created!';
+  RAISE NOTICE '✅ javari Barrels Enhanced Schema Created!';
   RAISE NOTICE '📸 Spirit Images with rights tracking';
   RAISE NOTICE '🏛️ History & Museum content';
   RAISE NOTICE '🍸 Speakeasy directory';

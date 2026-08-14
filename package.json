@@ -2,7 +2,7 @@
   "name": "barrelverse",
   "version": "1.0.0",
   "private": true,
-  "description": "CravBarrels - Ultimate Bourbon & Spirits Collection Platform",
+  "description": "Javari Spirits - Ultimate Bourbon & Spirits Collection Platform",
   "author": "CR AudioViz AI, LLC",
   "scripts": {
     "dev": "next dev",

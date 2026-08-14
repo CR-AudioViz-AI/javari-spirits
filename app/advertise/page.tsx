@@ -160,7 +160,7 @@ export default function AdvertisePage() {
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 rounded-full border border-amber-500/30 mb-6">
               <Megaphone className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 text-sm font-medium">Partner With CRAVBarrels</span>
+              <span className="text-amber-400 text-sm font-medium">Partner With Javari Spirits</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Reach <span className="text-amber-400">Passionate</span> Spirit Enthusiasts
@@ -225,7 +225,7 @@ export default function AdvertisePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">Our Audience</h2>
             <p className="text-stone-400 max-w-2xl mx-auto">
-              Engaged, affluent spirit enthusiasts who trust CRAVBarrels for discovery and recommendations
+              Engaged, affluent spirit enthusiasts who trust Javari Spirits for discovery and recommendations
             </p>
           </div>
 
@@ -559,7 +559,7 @@ export default function AdvertisePage() {
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     className="w-full px-4 py-3 bg-stone-800 border border-stone-700 rounded-lg text-white placeholder-stone-500 focus:outline-none focus:border-amber-500 resize-none"
-                    placeholder="What would you like to achieve with CRAVBarrels advertising?"
+                    placeholder="What would you like to achieve with Javari Spirits advertising?"
                   />
                 </div>
               </div>
@@ -608,10 +608,10 @@ export default function AdvertisePage() {
             Questions? Contact our advertising team directly:
           </p>
           <a 
-            href="mailto:advertising@cravbarrels.com"
+            href="mailto:advertising@javarispirits.com"
             className="text-amber-400 hover:text-amber-300 font-medium text-lg"
           >
-            advertising@cravbarrels.com
+            advertising@javarispirits.com
           </a>
         </div>
       </section>

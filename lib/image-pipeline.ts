@@ -1,5 +1,5 @@
 /**
- * CRAV Barrels - Spirit Image Pipeline
+ * Javari Barrels - Spirit Image Pipeline
  * 
  * Multi-source image acquisition system that fetches REAL bottle images
  * from Wikidata, Wikimedia Commons, Openverse, and user submissions.
@@ -114,7 +114,7 @@ export class SpiritImagePipeline {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com; contact@craudiovizai.com)',
+        'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com; contact@craudiovizai.com)',
         'Accept': 'application/json'
       }
     });
@@ -154,7 +154,7 @@ export class SpiritImagePipeline {
       `https://commons.wikimedia.org/w/api.php?${params}`,
       {
         headers: {
-          'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com; contact@craudiovizai.com)'
+          'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com; contact@craudiovizai.com)'
         }
       }
     );
@@ -198,7 +198,7 @@ export class SpiritImagePipeline {
       `https://commons.wikimedia.org/w/api.php?${params}`,
       {
         headers: {
-          'User-Agent': 'CRAVBarrels/1.0 (https://cravbarrels.com; contact@craudiovizai.com)'
+          'User-Agent': 'Javari Spirits/1.0 (https://javarispirits.com; contact@craudiovizai.com)'
         }
       }
     );
@@ -255,7 +255,7 @@ export class SpiritImagePipeline {
     });
 
     const headers: Record<string, string> = {
-      'User-Agent': 'CRAVBarrels/1.0'
+      'User-Agent': 'Javari Spirits/1.0'
     };
 
     if (OPENVERSE_API_KEY) {

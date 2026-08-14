@@ -26,7 +26,7 @@ export function CrossSellBanner() {
         
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-purple-100">Also try CravCards!</h3>
+            <h3 className="font-semibold text-purple-100">Also try Javari Cards!</h3>
             <Sparkles className="w-4 h-4 text-purple-400" />
           </div>
           <p className="text-purple-200/80 text-sm">
@@ -35,7 +35,7 @@ export function CrossSellBanner() {
         </div>
         
         <Link
-          href="https://cravcards.com"
+          href="https://javaricards.com"
           target="_blank"
           className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition whitespace-nowrap"
         >

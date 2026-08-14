@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     const { action, category, limit = 50, api_key } = body;
     
     // Simple API key check for cron jobs
-    const expectedKey = process.env.ENRICHMENT_API_KEY || 'crav-enrich-2025';
+    const expectedKey = process.env.ENRICHMENT_API_KEY || 'javari-enrich-2025';
     if (api_key !== expectedKey) {
       return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }

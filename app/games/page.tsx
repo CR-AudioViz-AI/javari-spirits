@@ -276,9 +276,9 @@ export default function GamesHubPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-white">
             <span className="text-2xl">🥃</span>
-            <span className="font-bold">CravBarrels</span>
+            <span className="font-bold">Javari Spirits</span>
           </Link>
-          <h1 className="text-xl font-bold text-white">Games Hub</h1>
+          <h1 className="text-xl font-bold text-white">Javari Games</h1>
           <Link href="/rewards" className="flex items-center gap-2 text-amber-500">
             <span>🏆</span>
             <span className="font-medium">Rewards</span>

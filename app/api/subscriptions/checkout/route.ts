@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `CRAVBarrels ${selectedPlan.name}`,
+              name: `Javari Spirits ${selectedPlan.name}`,
               description: selectedPlan.features.join(" • "),
             },
             unit_amount: selectedPlan.price,

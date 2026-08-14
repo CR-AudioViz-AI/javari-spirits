@@ -158,7 +158,7 @@ export default function CoursesPage() {
           >
             <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full text-sm mb-4">
               <GraduationCap className="w-4 h-4" />
-              CRAVBarrels Academy
+              Javari Spirits Academy
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Spirit Education Center

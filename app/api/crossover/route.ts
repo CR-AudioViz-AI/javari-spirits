@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Javari Spirits <-> CRAVCards Crossover API
+// Javari Spirits <-> Javari Cards Crossover API
 // Allows shared users to access both platforms with single sign-on
 
 export async function GET(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         });
 
       case 'achievements':
-        // Get achievements that could unlock rewards in CRAVCards
+        // Get achievements that could unlock rewards in Javari Cards
         const { data: achievements } = await supabase
           .from('bv_user_achievements')
           .select(`
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         });
 
       case 'subscription':
-        // Check if premium subscription can apply to CRAVCards
+        // Check if premium subscription can apply to Javari Cards
         const { data: sub } = await supabase
           .from('bv_subscriptions')
           .select('*')
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           subscription: sub,
           crossoverBenefits: sub?.plan !== 'free' ? {
-            cardsDiscount: 20,  // 20% off CRAVCards premium
+            cardsDiscount: 20,  // 20% off Javari Cards premium
             sharedCredits: true,
             prioritySupport: sub?.plan === 'sommelier'
           } : null
@@ -96,14 +96,14 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'sync_from_cards':
-        // Receive data from CRAVCards to sync here
-        // This would be called by CRAVCards when user links accounts
+        // Receive data from Javari Cards to sync here
+        // This would be called by Javari Cards when user links accounts
         const { cardsProfile, cardsAchievements } = data || {};
         
         // Could create crossover rewards or sync preferences
         return NextResponse.json({
           success: true,
-          message: 'Data received from CRAVCards',
+          message: 'Data received from Javari Cards',
           synced: {
             profile: !!cardsProfile,
             achievements: cardsAchievements?.length || 0
@@ -111,13 +111,13 @@ export async function POST(request: NextRequest) {
         });
 
       case 'link_accounts':
-        // Link Javari Spirits account with CRAVCards
-        // In production, this would verify with CRAVCards API
+        // Link Javari Spirits account with Javari Cards
+        // In production, this would verify with Javari Cards API
         return NextResponse.json({
           success: true,
           linkedAt: new Date().toISOString(),
           benefits: [
-            '20% discount on CRAVCards premium',
+            '20% discount on Javari Cards premium',
             'Shared achievement rewards',
             'Unified profile',
             'Cross-platform notifications'

@@ -15,7 +15,7 @@ function getSupabase() {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'crav-admin-2024';
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'javari-admin-2024';
 
 function validateAdminKey(request: NextRequest): boolean {
   const apiKey = request.headers.get('X-Admin-Key') || 
