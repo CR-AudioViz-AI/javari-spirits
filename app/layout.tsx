@@ -4,6 +4,11 @@
 import type { Metadata } from 'next'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
+  // 2026-08-16: no metadataBase meant relative og:image paths resolved against
+  // the preview hostname, and no canonical meant a trailing slash, a query
+  // string and a preview host all competed for the same content.
+  metadataBase: new URL('https://javarispirits.com'),
+  alternates: { canonical: '/' },
   title: 'Javari Spirits',
   description: 'Javari Spirits — powered by Javari AI on the CR AudioViz AI platform',
   openGraph: { title: 'Javari Spirits', type: 'website' },
