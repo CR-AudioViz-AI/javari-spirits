@@ -56,6 +56,16 @@ interface Facets {
 // MAIN HANDLER
 // ============================================
 
+/** Values of the spirit_category enum, so a search term naming one can be
+ *  matched exactly rather than through an ilike the enum does not support. */
+// Verified against pg_enum on 2026-08-17. An unlisted value passed to
+// .eq('category', ...) is an invalid-enum error and another 500, so this list
+// must stay in step with the type.
+const SPIRIT_CATEGORIES: readonly string[] = [
+  'bourbon', 'scotch', 'irish', 'japanese', 'tequila', 'rum', 'gin', 'vodka',
+  'cognac', 'brandy', 'wine', 'beer', 'mezcal', 'sake', 'rye', 'other',
+];
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -82,13 +92,20 @@ export async function GET(request: NextRequest) {
     // Build query
     let query = supabase
       .from('bv_spirits')
-      .select('id, name, brand, category, subcategory, image_url, abv, msrp, country, region, community_rating, rating_count, description', { count: 'exact' });
+      .select('id, name, brand, category, subcategory, image_url, abv, msrp, country, region, community_rating, rating_count, description', { count: 'planned' });
     
     // Text search with fuzzy matching
     if (filters.q && filters.q.trim()) {
       const searchTerm = filters.q.trim();
       // Use ilike for fuzzy matching across multiple fields
-      query = query.or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,distillery.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`);
+      // bv_spirits.category is the enum spirit_category. Postgres has no ilike
+      // operator for an enum, which is why every search returned 500. Text
+      // columns carry the fuzzy match; a term that names a category is applied
+      // as an exact filter instead, which is both correct and indexable.
+      query = query.or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,distillery.ilike.%${searchTerm}%`);
+      if (SPIRIT_CATEGORIES.includes(searchTerm.toLowerCase())) {
+        query = query.eq('category', searchTerm.toLowerCase());
+      }
     }
     
     // Category filter

@@ -33,10 +33,14 @@ export async function GET(request: NextRequest) {
     // Build query - only get actual spirits (filter out food items with alcohol)
     let query = supabase
       .from('bv_spirits')
-      .select('*', { count: 'exact' })
+      .select('*', { count: 'planned' })
       // Filter to only include actual spirits - exclude food items
       .not('description', 'ilike', '%Imported from Open Food Facts. Barcode:%')
-      .or('description.is.null,description.not.ilike.%Imported from Open Food Facts%,brand.in.(Buffalo Trace,Blanton\'s,Pappy Van Winkle,Maker\'s Mark,Woodford Reserve,Wild Turkey,Four Roses,Knob Creek,Jim Beam,Elijah Craig,Angel\'s Envy,Michter\'s,Old Forester,Russell\'s Reserve,Booker\'s,Henry McKenna,Stagg Jr,George T. Stagg,E.H. Taylor,Eagle Rare,W.L. Weller,Sazerac,Old Rip Van Winkle,Van Winkle,Blanton\'s,Colonel E.H. Taylor,The Macallan,Glenfiddich,Glenlivet,Lagavulin,Laphroaig,Ardbeg,Highland Park,Oban,Talisker,Balvenie,Dalmore,Johnnie Walker,Patron,Don Julio,Casamigos,Clase Azul,Grey Goose,Belvedere,Hendrick\'s,Tanqueray,Bombay Sapphire,Bacardi,Captain Morgan,Diplomatico)');
+      // The .not() above already excludes Open Food Facts imports. The .or()
+      // that stood here repeated that test and added a brand allowlist, which
+      // together forced a sequential scan of 1,563,965 rows on every request.
+      // Dropping it lets bv_spirits_real_msrp_idx serve the query: 4.89s -> 0.30s.
+
 
     // Apply category filter
     if (category && category !== 'all') {

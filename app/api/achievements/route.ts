@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   const { data: achievements, error: achError } = await supabase
     .from('bv_achievements')
     .select('*')
-    .order('points', { ascending: true });
+    .order('sort_order', { ascending: true });
 
   if (achError) {
     return NextResponse.json({ error: achError.message }, { status: 500 });
