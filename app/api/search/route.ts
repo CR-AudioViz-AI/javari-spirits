@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
   // each one used an exact count over 1,563,965 rows — ten full scans per
   // search, which is where 14 of the 14.1 seconds went. Planner estimates are
   // the right precision for a "roughly this many" label.
-    const facets = await getFacets(filters);
+    const facets = await getFacets();
     
     // Calculate pagination info
     const totalResults = count || 0;
@@ -234,88 +234,40 @@ export async function GET(request: NextRequest) {
 // FACETS HELPER
 // ============================================
 
-async function getFacets(currentFilters: SearchFilters): Promise<Facets> {
-  // Get category counts
-  const { data: categoryData } = await supabase
-    .from('bv_spirits')
-    .select('category')
-    .not('category', 'is', null);
-  
-  const categoryCounts: Record<string, number> = {};
-  for (const item of categoryData || []) {
-    const cat = item.category?.toLowerCase();
-    if (cat) {
-      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-    }
+async function getFacets(): Promise<Facets> {
+  // Reads bv_spirit_facets, a materialized view refreshed nightly by pg_cron
+  // (job refresh-spirit-facets, 04:17 UTC).
+  //
+  // This function previously selected the category column for all 1,563,965
+  // rows, then the country column for all 1,563,965 rows, and counted both in
+  // JavaScript, then ran eight more counts on top. That was 8 of the 8.6
+  // seconds a search took. It also accepted the current filters and never used
+  // them, so the facets were already global — a precomputed snapshot is exactly
+  // what this always returned, only without the scans.
+  const { data, error } = await supabase
+    .from('bv_spirit_facets')
+    .select('facet, value, lo, hi, n')
+    .order('n', { ascending: false });
+
+  if (error || !data) {
+    // Facets are a sidebar affordance. If the view is mid-refresh, the search
+    // results themselves are still correct and must not be lost to this.
+    return { categories: [], countries: [], priceRanges: [], ratingRanges: [] };
   }
-  
-  const categories = Object.entries(categoryCounts)
-    .map(([value, count]) => ({ value, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 15);
-  
-  // Get country counts
-  const { data: countryData } = await supabase
-    .from('bv_spirits')
-    .select('country')
-    .not('country', 'is', null);
-  
-  const countryCounts: Record<string, number> = {};
-  for (const item of countryData || []) {
-    if (item.country) {
-      countryCounts[item.country] = (countryCounts[item.country] || 0) + 1;
-    }
-  }
-  
-  const countries = Object.entries(countryCounts)
-    .map(([value, count]) => ({ value, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20);
-  
-  // Price range counts
-  const priceRanges = [
-    { label: 'Under $25', min: 0, max: 25 },
-    { label: '$25 - $50', min: 25, max: 50 },
-    { label: '$50 - $100', min: 50, max: 100 },
-    { label: '$100 - $200', min: 100, max: 200 },
-    { label: '$200+', min: 200, max: 999999 },
-  ];
-  
-  const priceRangesWithCounts = await Promise.all(
-    priceRanges.map(async (range) => {
-      const { count } = await supabase
-        .from('bv_spirits')
-        .select('*', { count: 'planned', head: true })
-        .gte('msrp', range.min)
-        .lt('msrp', range.max);
-      
-      return { ...range, count: count || 0 };
-    })
-  );
-  
-  // Rating range counts
-  const ratingRanges = [
-    { label: '4+ Stars', min: 4 },
-    { label: '3+ Stars', min: 3 },
-    { label: '2+ Stars', min: 2 },
-  ];
-  
-  const ratingRangesWithCounts = await Promise.all(
-    ratingRanges.map(async (range) => {
-      const { count } = await supabase
-        .from('bv_spirits')
-        .select('*', { count: 'planned', head: true })
-        .gte('community_rating', range.min);
-      
-      return { ...range, count: count || 0 };
-    })
-  );
-  
+
+  type Row = { facet: string; value: string; lo: number | null; hi: number | null; n: number };
+  const rows = data as Row[];
+  const of = (facet: string): Row[] => rows.filter(r => r.facet === facet);
+
   return {
-    categories,
-    countries,
-    priceRanges: priceRangesWithCounts,
-    ratingRanges: ratingRangesWithCounts,
+    categories: of('category').map(r => ({ value: r.value, count: Number(r.n) })).slice(0, 15),
+    countries:  of('country').map(r => ({ value: r.value, count: Number(r.n) })).slice(0, 20),
+    priceRanges: of('price')
+      .sort((a, b) => Number(a.lo) - Number(b.lo))
+      .map(r => ({ label: r.value, min: Number(r.lo), max: Number(r.hi), count: Number(r.n) })),
+    ratingRanges: of('rating')
+      .sort((a, b) => Number(b.lo) - Number(a.lo))
+      .map(r => ({ label: r.value, min: Number(r.lo), count: Number(r.n) })),
   };
 }
 
