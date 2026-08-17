@@ -15,6 +15,7 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin';
+import { requireUser } from '@/lib/auth/session'
 import { normaliseName } from '@/lib/collection/model'
 import { toCategorySlug } from '@/lib/collection/category'
 
@@ -25,7 +26,6 @@ export const runtime = 'nodejs'
 
 
 interface Body {
-  userId: string
   name: string
   brand?: string
   category?: string
@@ -56,8 +56,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
-  if (!b.userId || !b.name?.trim()) {
-    return NextResponse.json({ error: 'userId and name are required' }, { status: 400, headers: NO_STORE_HEADERS })
+  const caller = await requireUser(request)
+  if (!caller.ok) {
+    return NextResponse.json({ error: caller.message }, { status: caller.status, headers: NO_STORE_HEADERS })
+  }
+  const userId = caller.userId
+
+  if (!b.name?.trim()) {
+    return NextResponse.json({ error: 'A name is required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
   const supa = adminDb()
@@ -69,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // notes that only apply to that one physical bottle.
   if (opened) {
     const { data, error } = await supa.from('user_bottles').insert({
-      user_id: b.userId,
+      user_id: userId,
       domain: 'spirits',
       catalog_id: groupKey,
       name: b.name.trim(),
@@ -101,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Sealed: find an existing sealed row for the same spirit and stack onto it.
   let query = supa.from('user_bottles')
     .select('id,quantity,name,brand')
-    .eq('user_id', b.userId)
+    .eq('user_id', userId)
     .eq('domain', 'spirits')
     .eq('is_open', false)
     .eq('is_finished', false)
@@ -130,7 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const { data, error } = await supa.from('user_bottles').insert({
-    user_id: b.userId,
+    user_id: userId,
       domain: 'spirits',
     catalog_id: groupKey,
     name: b.name.trim(),

@@ -10,6 +10,8 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin';
+import { requireUser } from '@/lib/auth/session'
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
@@ -20,20 +22,26 @@ export const runtime = 'nodejs'
 const DRAM_PERCENT = 8
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let b: { userId: string; bottleId: string; toLevel?: number; drams?: number; occasion?: string; notes?: string }
+  let b: { bottleId: string; toLevel?: number; drams?: number; occasion?: string; notes?: string }
   try {
     b = await request.json()
   } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
-  if (!b.userId || !b.bottleId) {
-    return NextResponse.json({ error: 'userId and bottleId are required' }, { status: 400, headers: NO_STORE_HEADERS })
+  const caller = await requireUser(request)
+  if (!caller.ok) {
+    return NextResponse.json({ error: caller.message }, { status: caller.status, headers: NO_STORE_HEADERS })
+  }
+  const userId = caller.userId
+
+  if (!b.bottleId) {
+    return NextResponse.json({ error: 'bottleId is required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
   const supa = adminDb()
   const { data: row, error } = await supa
     .from('user_bottles').select('id,fill_level,is_open,name')
-    .eq('id', b.bottleId).eq('user_id', b.userId).single()
+    .eq('id', b.bottleId).eq('user_id', userId).single()
   if (error || !row) return NextResponse.json({ error: 'Bottle not found' }, { status: 404, headers: NO_STORE_HEADERS })
   if (!row.is_open) {
     return NextResponse.json({ error: 'That bottle is still sealed. Open it first.' }, { status: 400, headers: NO_STORE_HEADERS })
@@ -55,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }).eq('id', row.id)
 
   await supa.from('bottle_pours').insert({
-    bottle_id: row.id, user_id: b.userId,
+    bottle_id: row.id, user_id: userId,
     from_level: from, to_level: to,
     occasion: b.occasion ?? null, notes: b.notes ?? null,
   })

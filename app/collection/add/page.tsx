@@ -16,6 +16,7 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '@/lib/hooks/use-auth'
 
 interface Candidate {
   name: string
@@ -27,7 +28,10 @@ interface Candidate {
 }
 
 export default function AddBottle() {
-  const [userId, setUserId] = useState('')
+  // Identity from the session, not from a localStorage key nothing writes.
+  const { user, session, loading: authLoading } = useAuth()
+  const userId = user?.id ?? ''
+  const token = session?.access_token ?? ''
   const [query, setQuery] = useState('')
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [searching, setSearching] = useState(false)
@@ -51,8 +55,6 @@ export default function AddBottle() {
 
   useEffect(() => {
     try {
-      setUserId(window.localStorage?.getItem('sb-user-id') ??
-                window.localStorage?.getItem('userId') ?? '')
       // A scan hands off through session storage rather than a query string,
       // so a long product name never ends up in a shareable URL.
       const handoff = window.sessionStorage?.getItem('scan-handoff')
@@ -92,14 +94,15 @@ export default function AddBottle() {
 
   const save = async () => {
     setErr(''); setMsg('')
+    if (authLoading) return
     if (!userId) { setErr('Sign in first — your collection is tied to your account.'); return }
     if (!name.trim()) { setErr('A name is required.'); return }
     setSaving(true)
     try {
       const r = await fetch('/api/collection/add', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          userId, name: name.trim(),
+          name: name.trim(),
           brand: brand.trim() || undefined,
           category: category.trim() || undefined,
           bottleSize: size || undefined,

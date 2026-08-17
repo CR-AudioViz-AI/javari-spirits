@@ -11,6 +11,8 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin';
+import { requireUser } from '@/lib/auth/session'
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
@@ -18,19 +20,25 @@ export const runtime = 'nodejs'
 
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let b: { userId: string; sealedRowId: string; fillLevel?: number; notes?: string }
+  let b: { sealedRowId: string; fillLevel?: number; notes?: string }
   try {
     b = await request.json()
   } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
-  if (!b.userId || !b.sealedRowId) {
-    return NextResponse.json({ error: 'userId and sealedRowId are required' }, { status: 400, headers: NO_STORE_HEADERS })
+  const caller = await requireUser(request)
+  if (!caller.ok) {
+    return NextResponse.json({ error: caller.message }, { status: caller.status, headers: NO_STORE_HEADERS })
+  }
+  const userId = caller.userId
+
+  if (!b.sealedRowId) {
+    return NextResponse.json({ error: 'sealedRowId is required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
   const supa = adminDb()
   const { data: row, error: readErr } = await supa
-    .from('user_bottles').select('*').eq('id', b.sealedRowId).eq('user_id', b.userId).single()
+    .from('user_bottles').select('*').eq('id', b.sealedRowId).eq('user_id', userId).single()
   if (readErr || !row) {
     return NextResponse.json({ error: 'Bottle not found' }, { status: 404, headers: NO_STORE_HEADERS })
   }

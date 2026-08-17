@@ -11,6 +11,7 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '@/lib/hooks/use-auth'
 import BottleCard from '@/components/collection/BottleCard'
 import type { Card } from '@/components/collection/BottleCard'
 
@@ -31,23 +32,25 @@ export default function Shelf() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [userId, setUserId] = useState('')
   const [sort, setSort] = useState<'name' | 'value' | 'level'>('name')
 
-  useEffect(() => {
-    // The auth wiring for this app lives elsewhere; read whatever it stored.
-    try {
-      const raw = window.localStorage?.getItem('sb-user-id') ??
-                  window.localStorage?.getItem('userId') ?? ''
-      setUserId(raw)
-    } catch { setUserId('') }
-  }, [])
+  // Identity comes from the session. This used to read a localStorage key
+  // called 'sb-user-id' that nothing in the app ever wrote, so userId was
+  // always empty and the shelf could never load for a real person.
+  const { user, session, loading: authLoading } = useAuth()
+  const userId = user?.id ?? ''
+  const token = session?.access_token ?? ''
+
+  const authed = useCallback((extra?: HeadersInit): HeadersInit => ({
+    ...(extra ?? {}),
+    Authorization: `Bearer ${token}`,
+  }), [token])
 
   const load = useCallback(async (uid: string) => {
     if (!uid) { setLoading(false); return }
     setLoading(true)
     try {
-      const r = await fetch(`/api/collection/list?userId=${encodeURIComponent(uid)}`)
+      const r = await fetch('/api/collection/list', { headers: authed(), cache: 'no-store' })
       const d = await r.json()
       if (d.error) { setError(String(d.error)); return }
       setCards(d.cards ?? [])
@@ -59,16 +62,19 @@ export default function Shelf() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [authed])
 
-  useEffect(() => { void load(userId) }, [userId, load])
+  useEffect(() => {
+    if (authLoading) return
+    void load(userId)
+  }, [userId, authLoading, load])
 
   const openOne = async (sealedRowId: string) => {
     setBusy(true)
     try {
       await fetch('/api/collection/open', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, sealedRowId }),
+        method: 'POST', headers: authed({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ sealedRowId }),
       })
       await load(userId)
     } finally { setBusy(false) }
@@ -78,8 +84,8 @@ export default function Shelf() {
     setBusy(true)
     try {
       await fetch('/api/collection/pour', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, bottleId, toLevel }),
+        method: 'POST', headers: authed({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ bottleId, toLevel }),
       })
       await load(userId)
     } finally { setBusy(false) }
@@ -153,10 +159,10 @@ export default function Shelf() {
           </div>
         )}
 
-        {loading && <p style={{ color: 'rgba(242,237,228,0.5)' }}>Loading your shelf…</p>}
+        {(loading || authLoading) && <p style={{ color: 'rgba(242,237,228,0.5)' }}>Loading your shelf…</p>}
         {error && <p style={{ color: '#FF8C4F' }}>{error}</p>}
 
-        {!loading && !userId && (
+        {!loading && !authLoading && !userId && (
           <Empty
             title="Sign in to see your shelf"
             body="Your collection is tied to your account so it follows you to any device."
@@ -164,7 +170,7 @@ export default function Shelf() {
           />
         )}
 
-        {!loading && userId && cards.length === 0 && !error && (
+        {!loading && !authLoading && userId && cards.length === 0 && !error && (
           <Empty
             title="Nothing on the shelf yet"
             body="Scan a barcode, photograph a label, or search by name. Anything you add by hand becomes a confirmed record, so the next person who scans that bottle gets it instantly."

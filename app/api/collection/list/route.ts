@@ -16,6 +16,7 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin';
+import { requireUser } from '@/lib/auth/session'
 import { describe, runningLow, toCards } from '@/lib/collection/model'
 import type { BottleRow } from '@/lib/collection/model'
 
@@ -25,10 +26,14 @@ export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const userId = request.nextUrl.searchParams.get('userId')
-  if (!userId) {
-    return NextResponse.json({ error: 'userId is required' }, { status: 400, headers: NO_STORE_HEADERS })
+  // The owner comes from the verified session. It used to come from
+  // ?userId=<uuid>, which let anyone read anyone's collection and, worse, meant
+  // the page had no id to send and sat on "Loading your shelf…" forever.
+  const caller = await requireUser(request)
+  if (!caller.ok) {
+    return NextResponse.json({ error: caller.message }, { status: caller.status, headers: NO_STORE_HEADERS })
   }
+  const userId = caller.userId
 
   try {
     const supa = adminDb()
