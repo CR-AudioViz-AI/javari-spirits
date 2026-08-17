@@ -29,6 +29,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data, error } = await supa
     .from('user_bottles').select('*')
     .eq('user_id', userId)
+    .eq('domain', 'spirits')
     .eq('is_finished', false)
     .order('name')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -37,10 +38,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const low = runningLow(cards)
 
   return NextResponse.json({
-    // Temporary: the row exists in the database and the service key works when
-    // queried directly, but this route returned zero cards. Surfacing the raw
-    // count separates "query found nothing" from "grouping dropped it".
-    _debug: { rawRows: (data ?? []).length, userId },
     cards: cards.map(c => ({ ...c, summary: describe(c) })),
     totals: {
       distinctSpirits: cards.length,

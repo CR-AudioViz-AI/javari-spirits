@@ -75,6 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (opened) {
     const { data, error } = await supa.from('user_bottles').insert({
       user_id: b.userId,
+      domain: 'spirits',
       catalog_id: groupKey,
       name: b.name.trim(),
       brand: b.brand ?? null,
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let query = supa.from('user_bottles')
     .select('id,quantity,name,brand')
     .eq('user_id', b.userId)
+    .eq('domain', 'spirits')
     .eq('is_open', false)
     .eq('is_finished', false)
   query = groupKey
@@ -134,6 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { data, error } = await supa.from('user_bottles').insert({
     user_id: b.userId,
+      domain: 'spirits',
     catalog_id: groupKey,
     name: b.name.trim(),
     brand: b.brand ?? null,

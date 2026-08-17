@@ -55,6 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // extra bottle recorded, which is a far better failure than one that vanished.
   const { data: opened, error: insErr } = await supa.from('user_bottles').insert({
     user_id: row.user_id,
+      domain: 'spirits',
     catalog_id: row.catalog_id,
     reference_id: row.reference_id,
     name: row.name, brand: row.brand, category: row.category,
