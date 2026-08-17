@@ -15,7 +15,7 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin'
+import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin';
 import { describe, runningLow, toCards } from '@/lib/collection/model'
 import type { BottleRow } from '@/lib/collection/model'
 

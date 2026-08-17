@@ -15,8 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
+import { lazyAdminDb } from '@/lib/supabase/admin';
 // Define types
 interface TicketStats {
   status: string;
@@ -24,10 +23,7 @@ interface TicketStats {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const supabase: any = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = lazyAdminDb()
 
 // GET - List auto tickets with filtering
 export async function GET(request: NextRequest) {

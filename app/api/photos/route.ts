@@ -6,7 +6,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb, anonDb } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
 
 // Initialize Supabase
@@ -15,11 +15,11 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 function getServiceClient() {
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return adminDb();
 }
 
 function getAnonClient() {
-  return createClient(supabaseUrl, supabaseAnonKey);
+  return anonDb();
 }
 
 // ============================================================
@@ -300,13 +300,7 @@ export async function POST(request: NextRequest) {
     const authHeader = headersList.get('authorization');
     
     // Get user from auth header
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: authHeader || ''
-        }
-      }
-    });
+    const supabaseAuth = anonDb(authHeader);
     
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     
@@ -507,13 +501,7 @@ export async function DELETE(request: NextRequest) {
     const headersList = await headers();
     const authHeader = headersList.get('authorization');
     
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: authHeader || ''
-        }
-      }
-    });
+    const supabaseAuth = anonDb(authHeader);
     
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     

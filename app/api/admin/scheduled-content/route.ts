@@ -16,8 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
+import { lazyAdminDb } from '@/lib/supabase/admin';
 // Type definitions
 interface ScheduledContent {
   id: string
@@ -39,10 +38,7 @@ interface ScheduledContentInput {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const supabase: any = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = lazyAdminDb()
 
 // GET - List scheduled content
 export async function GET(request: NextRequest) {

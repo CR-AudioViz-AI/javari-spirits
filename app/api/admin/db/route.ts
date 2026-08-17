@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
+import { lazyAdminDb } from '@/lib/supabase/admin';
 // Admin route for database operations - protected by CRON_SECRET
 export async function POST(request: NextRequest) {
   // Verify secret
@@ -10,16 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Create admin client that bypasses RLS
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    }
-  );
+  const supabaseAdmin = lazyAdminDb();
 
   try {
     const body = await request.json();

@@ -1,11 +1,7 @@
 // app/api/barcode/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { lazyAdminDb } from '@/lib/supabase/admin';
+const supabase = lazyAdminDb();
 
 // UPC Database API (free tier)
 const UPC_API_URL = 'https://api.upcitemdb.com/prod/trial/lookup';
