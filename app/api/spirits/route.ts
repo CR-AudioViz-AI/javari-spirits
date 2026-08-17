@@ -73,14 +73,17 @@ export async function GET(request: NextRequest) {
       price: spirit.msrp,
     }));
 
-    // Get category counts
+    // Get category counts.
+    // This previously selected the category column from all 1.5M rows and
+    // counted them in memory on every request, which is what made this route
+    // time out. bv_spirit_category_counts is a view that groups in the database.
     const { data: categoryCounts } = await supabase
-      .from('bv_spirits')
-      .select('category');
+      .from('bv_spirit_category_counts')
+      .select('category, count');
 
     const counts: Record<string, number> = {};
-    (categoryCounts || []).forEach((item: { category: string }) => {
-      counts[item.category] = (counts[item.category] || 0) + 1;
+    (categoryCounts || []).forEach((item: { category: string; count: number }) => {
+      counts[item.category] = Number(item.count);
     });
 
     return NextResponse.json({

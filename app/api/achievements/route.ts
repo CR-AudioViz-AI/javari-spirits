@@ -173,13 +173,13 @@ export async function POST(request: NextRequest) {
 async function getUserStats(userId: string) {
   // Get collection counts
   const { count: collectionCount } = await supabase
-    .from('bv_user_collection')
+    .from('bv_user_collections')
     .select('id', { count: 'exact' })
     .eq('user_id', userId);
 
   // Get category counts
   const { data: categoryData } = await supabase
-    .from('bv_user_collection')
+    .from('bv_user_collections')
     .select('spirit:bv_spirits(category)')
     .eq('user_id', userId);
 
@@ -214,7 +214,7 @@ async function getUserStats(userId: string) {
 
   // Get ultra rare count
   const { count: ultraRareCount } = await supabase
-    .from('bv_user_collection')
+    .from('bv_user_collections')
     .select('id, spirit:bv_spirits!inner(rarity)', { count: 'exact' })
     .eq('user_id', userId)
     .eq('spirit.rarity', 'ultra_rare');

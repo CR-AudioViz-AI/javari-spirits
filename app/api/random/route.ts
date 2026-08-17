@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       // Get random spirits from database
       let query = supabase
         .from("bv_spirits")
-        .select("id, name, brand, category, type, abv, description, image_url, flavor_profile")
+        .select("id, name, brand, category, subcategory, abv, description, image_url, flavor_profile")
         .limit(count * 10); // Get more to randomize
 
       if (category) {

@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
       .from('bv_activities')
       .select(`
         *,
-        user:profiles(id, full_name, avatar_url, username),
+        user:profiles(id, full_name, avatar_url, display_name),
         spirit:bv_spirits(id, name, brand, image_url, category),
         cocktail:bv_cocktails(id, name, image_url),
-        distillery:bv_distilleries(id, name, logo_url)
+        distillery:bv_distilleries(id, name, image_url)
       `)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
         spirit_id: spiritId,
         cocktail_id: cocktailId,
         distillery_id: distilleryId,
-        content,
         metadata,
         is_public: isPublic !== false,
       })
