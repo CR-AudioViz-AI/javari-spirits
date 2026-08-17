@@ -31,7 +31,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.8,
         features: ['Monthly Curated Box', 'Exclusive Bottles', 'Tasting Notes', 'Members Events'],
         cta: 'Join Flaviar',
-        url: 'https://www.flaviar.com/?ref=javarispirits', // Replace with actual affiliate link
+        url: 'https://www.flaviar.com/', // Replace with actual affiliate link
         badge: 'Editor\'s Choice'
       },
       {
@@ -41,7 +41,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.6,
         features: ['Multiple Spirit Types', 'Flexible Plans', 'Rare Releases', 'Gift Options'],
         cta: 'Explore PourMore',
-        url: 'https://pourmore.com/?ref=javarispirits',
+        url: 'https://pourmore.com/',
         badge: null
       },
       {
@@ -51,7 +51,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.5,
         features: ['Small-Batch Spirits', 'Craft Focus', 'Discovery Box', 'Free Shipping'],
         cta: 'Shop Spirit Hub',
-        url: 'https://spirithub.com/?ref=javarispirits',
+        url: 'https://spirithub.com/',
         badge: null
       }
     ]
@@ -69,7 +69,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.9,
         features: ['Award-Winning Wines', 'Small Producers', 'Monthly or Quarterly', 'Wine Notes'],
         cta: 'Join Wine Club',
-        url: 'https://www.cawineclub.com/?ref=javarispirits',
+        url: 'https://www.cawineclub.com/',
         badge: 'Best Value'
       },
       {
@@ -79,7 +79,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.7,
         features: ['Organic Wines', 'Sustainable', 'Hand-Selected', 'Sommelier Picks'],
         cta: 'Explore Plonk',
-        url: 'https://www.plonkwineclub.com/?ref=javarispirits',
+        url: 'https://www.plonkwineclub.com/',
         badge: 'Eco-Friendly'
       },
       {
@@ -89,7 +89,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.6,
         features: ['Largest Selection', 'Expert Reviews', 'StewardShip Club', 'Gift Options'],
         cta: 'Shop Wine.com',
-        url: 'https://www.wine.com/?ref=javarispirits',
+        url: 'https://www.wine.com/',
         badge: null
       }
     ]
@@ -107,7 +107,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.7,
         features: ['Fast Delivery', 'Local Selection', 'Gift Sending', 'Wide Coverage'],
         cta: 'Order on Drizly',
-        url: 'https://drizly.com/?ref=javarispirits',
+        url: 'https://drizly.com/',
         badge: 'Fastest Delivery'
       },
       {
@@ -117,7 +117,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.5,
         features: ['30-Min Delivery', 'No Minimums', 'Craft Selection', 'Multiple Cities'],
         cta: 'Try Saucey',
-        url: 'https://saucey.com/?ref=javarispirits',
+        url: 'https://saucey.com/',
         badge: null
       },
       {
@@ -127,7 +127,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.6,
         features: ['Huge Selection', 'Great Prices', 'In-Store Pickup', 'Wine Classes'],
         cta: 'Shop Total Wine',
-        url: 'https://www.totalwine.com/?ref=javarispirits',
+        url: 'https://www.totalwine.com/',
         badge: null
       }
     ]
@@ -145,7 +145,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.8,
         features: ['Custom Engraving', 'Gift Sets', 'Bar Tools', 'Unique Gifts'],
         cta: 'Shop Home Wet Bar',
-        url: 'https://www.homewetbar.com/?ref=javarispirits',
+        url: 'https://www.homewetbar.com/',
         badge: 'Best for Gifts'
       },
       {
@@ -155,7 +155,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.6,
         features: ['Gift Baskets', 'Corporate Gifts', 'Customizable', 'Premium Quality'],
         cta: 'Shop Bro Basket',
-        url: 'https://thebrobasket.com/?ref=javarispirits',
+        url: 'https://thebrobasket.com/',
         badge: null
       },
       {
@@ -165,7 +165,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.7,
         features: ['Wine Storage', 'Premium Glass', 'Aerators', 'Expert Selection'],
         cta: 'Shop Wine Enthusiast',
-        url: 'https://www.wineenthusiast.com/?ref=javarispirits',
+        url: 'https://www.wineenthusiast.com/',
         badge: null
       }
     ]
@@ -183,7 +183,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.7,
         features: ['Bourbon Trail Tours', 'Skip-the-Line', 'Free Cancellation', 'Best Prices'],
         cta: 'Book on Viator',
-        url: 'https://www.viator.com/searchResults/all?text=bourbon&ref=javarispirits',
+        url: 'https://www.viator.com/searchResults/all?text=bourbon',
         badge: 'Most Options'
       },
       {
@@ -193,7 +193,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.6,
         features: ['Verified Reviews', 'Instant Booking', 'Local Guides', 'Price Match'],
         cta: 'Explore Tours',
-        url: 'https://www.getyourguide.com/?ref=javarispirits',
+        url: 'https://www.getyourguide.com/',
         badge: null
       }
     ]
@@ -211,7 +211,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.5,
         features: ['Online Courses', 'All 50 States', 'Instant Certificate', 'Affordable'],
         cta: 'Get Certified',
-        url: 'https://liquorexam.com/?ref=javarispirits',
+        url: 'https://liquorexam.com/',
         badge: null
       }
     ]
@@ -229,7 +229,7 @@ const AFFILIATE_CATEGORIES = [
         rating: 4.4,
         features: ['Craft Selection', 'Brewery Info', 'Monthly Delivery', 'Gift Options'],
         cta: 'Join Beer Club',
-        url: 'https://www.craftbeerclub.com/?ref=javarispirits',
+        url: 'https://www.craftbeerclub.com/',
         badge: null
       }
     ]

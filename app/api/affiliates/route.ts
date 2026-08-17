@@ -30,104 +30,13 @@ interface AffiliatePartner {
 }
 
 // Real affiliate partners from Awin network
-const AFFILIATE_PARTNERS: AffiliatePartner[] = [
-  {
-    id: 'totalwine',
-    name: 'Total Wine & More',
-    logo: '/retailers/total-wine.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=19899&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.totalwine.com/search/all?text=',
-    commission: '3-5%',
-    categories: ['whiskey', 'bourbon', 'scotch', 'vodka', 'gin', 'rum', 'tequila', 'wine', 'beer'],
-    description: "America's largest wine & spirits retailer",
-    shippingInfo: 'Free shipping on $150+',
-    rating: 4.7,
-  },
-  {
-    id: 'drizly',
-    name: 'Drizly',
-    logo: '/retailers/drizly.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=20917&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://drizly.com/search?q=',
-    commission: '4%',
-    categories: ['whiskey', 'bourbon', 'scotch', 'vodka', 'gin', 'rum', 'tequila', 'wine', 'beer'],
-    description: 'Delivery in under 60 minutes',
-    shippingInfo: '1-hour delivery available',
-    rating: 4.5,
-  },
-  {
-    id: 'reservebar',
-    name: 'ReserveBar',
-    logo: '/retailers/reservebar.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=15849&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.reservebar.com/search?q=',
-    commission: '5-8%',
-    categories: ['whiskey', 'bourbon', 'scotch', 'cognac', 'champagne'],
-    description: 'Premium & rare spirits specialist',
-    shippingInfo: 'Free shipping on $100+',
-    rating: 4.8,
-  },
-  {
-    id: 'wine_com',
-    name: 'Wine.com',
-    logo: '/retailers/wine-com.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=6025&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.wine.com/search/',
-    commission: '6%',
-    categories: ['wine', 'champagne', 'whiskey', 'spirits'],
-    description: 'Curated wine & spirits selection',
-    shippingInfo: 'StewardShip members get free shipping',
-    rating: 4.6,
-  },
-  {
-    id: 'caskers',
-    name: 'Caskers',
-    logo: '/retailers/caskers.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=25781&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.caskers.com/search.php?search_query=',
-    commission: '7%',
-    categories: ['whiskey', 'bourbon', 'scotch', 'rum', 'cognac'],
-    description: 'Boutique spirits curator',
-    shippingInfo: 'Ships to 48 states',
-    rating: 4.4,
-  },
-  {
-    id: 'flaviar',
-    name: 'Flaviar',
-    logo: '/retailers/flaviar.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=20291&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://flaviar.com/search?q=',
-    commission: '8%',
-    categories: ['whiskey', 'bourbon', 'scotch', 'rum', 'tequila', 'gin'],
-    description: 'Spirits club & rare finds',
-    shippingInfo: 'Member exclusive pricing',
-    rating: 4.3,
-  },
-  {
-    id: 'masterofmalt',
-    name: 'Master of Malt',
-    logo: '/retailers/masterofmalt.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=3539&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.masterofmalt.com/search/?q=',
-    commission: '5%',
-    categories: ['whiskey', 'scotch', 'bourbon', 'gin', 'rum', 'cognac'],
-    description: 'UK-based premium spirits',
-    shippingInfo: 'International shipping available',
-    rating: 4.6,
-  },
-  {
-    id: 'thewhiskyexchange',
-    name: 'The Whisky Exchange',
-    logo: '/retailers/whisky-exchange.png',
-    baseUrl: 'https://www.awin1.com/cread.php?awinmid=3390&awinaffid=2692370&clickref=javarispirits&ued=',
-    searchParam: 'https://www.thewhiskyexchange.com/search?q=',
-    commission: '4%',
-    categories: ['whiskey', 'scotch', 'bourbon', 'japanese_whisky', 'rum'],
-    description: 'Whisky specialist worldwide',
-    shippingInfo: 'Ships globally',
-    rating: 4.7,
-  },
-];
+// PARTNERS REMOVED 2026-08-17. Eight entries with hardcoded AWIN ids (19899,
+// 20917, 15849, 6025, 25781, 20291, 3539, 3390) that matched nothing in
+// affiliate_merchants. They also contradicted app/page.tsx — Total Wine was
+// 10924 there and 19899 here, which is itself proof the numbers were invented.
+// Real merchants come from affiliate_merchants, is_approved and is_active.
+const AFFILIATE_PARTNERS: AffiliatePartner[] = [];
+
 
 // Category mapping for spirits
 const CATEGORY_MAP: Record<string, string[]> = {

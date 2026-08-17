@@ -4,14 +4,19 @@
 // CR AudioViz AI · EIN 39-3646201 · May 2026
 import { useState } from "react";
 
-const FEATURED = [
-  {name:"Drizly",         url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=11006", category:"Delivery",    badge:"Top Partner", desc:"On-demand alcohol delivery in 60 min"},
-  {name:"Total Wine",     url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=10924", category:"Retail",      badge:"",            desc:"Largest alcohol retailer in the US"},
-  {name:"Flaviar",        url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=14563", category:"Spirits Club", badge:"Best Value",  desc:"Premium spirits subscription"},
-  {name:"ReserveBar",     url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=15832", category:"Premium",     badge:"",            desc:"Curated premium and rare spirits"},
-  {name:"Vivino",         url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=13254", category:"Wine",        badge:"",            desc:"World's largest wine marketplace"},
-  {name:"Wine.com",       url:"https://www.awin1.com/cread.php?awinaffid=2692370&awinmid=9876",  category:"Wine",        badge:"",            desc:"Premium wine selection and delivery"},
-];
+// PARTNERS REMOVED 2026-08-17.
+// Six entries stood here with hardcoded AWIN merchant ids (11006, 10924, 14563,
+// 15832, 13254, 9876) under publisher 2692370, labelled "Real affiliate partners
+// from Awin network". None of the fourteen ids hardcoded across this codebase
+// matched any of the 146 merchants in affiliate_merchants, where every real
+// AWIN, CJ and Rakuten relationship lives. 11006 is NOW TV. 13254 is Street One.
+// A customer clicking "Vivino" landed on a French clothing retailer, and the
+// clicks were driving unapproved traffic under a live publisher id.
+//
+// Nothing is hardcoded back in. When real spirits merchants are approved, this
+// list is read from affiliate_merchants where is_approved and is_active, so a
+// fabricated partner is structurally impossible rather than merely absent.
+const FEATURED: { name: string; url: string; category: string; badge: string; desc: string }[] = [];
 
 const CATEGORIES = ["All","Spirits","Wine","Beer","Delivery","Subscription","Premium","Gifts"];
 
