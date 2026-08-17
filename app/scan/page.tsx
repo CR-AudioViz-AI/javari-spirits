@@ -215,7 +215,7 @@ export default function BarcodeScannerPage() {
         params.append('query', manualInput.trim());
       }
       
-      const response = await fetch(`/api/scan/search?${params}`);
+      const response = await fetch(`/api/barcode/lookup?${params}`);
       const data = await response.json();
       
       if (data.success && data.spirit) {
