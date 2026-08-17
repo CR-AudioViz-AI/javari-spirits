@@ -292,23 +292,31 @@ export async function POST(request: NextRequest) {
       .limit(limit);
     
     // Search for matching brands
+    // Bounded. Unqualified, this matched every brand containing the term across
+    // 1,563,965 rows and pulled all of them back to pick five. The trigram index
+    // on brand makes the bounded form cheap.
     const { data: brands } = await supabase
       .from('bv_spirits')
       .select('brand')
       .ilike('brand', `%${query}%`)
-      .not('brand', 'is', null);
+      .not('brand', 'is', null)
+      .limit(500);
     
     // Dedupe brands
     const uniqueBrands = [...new Set((brands || []).map(b => b.brand))].slice(0, 5);
     
-    // Search for matching categories
+    // Categories come from the facet view, sixteen rows, not from a scan of the
+    // spirits table. bv_spirits.category is the enum spirit_category and
+    // Postgres has no ilike operator for an enum — the query that stood here
+    // returned 500 for every suggestion request.
     const { data: categories } = await supabase
-      .from('bv_spirits')
-      .select('category')
-      .ilike('category', `%${query}%`)
-      .not('category', 'is', null);
+      .from('bv_spirit_facets')
+      .select('value')
+      .eq('facet', 'category')
+      .ilike('value', `%${query}%`)
+      .limit(5);
     
-    const uniqueCategories = [...new Set((categories || []).map(c => c.category))].slice(0, 5);
+    const uniqueCategories = (categories || []).map(c => c.value as string);
     
     return NextResponse.json({
       suggestions: {
