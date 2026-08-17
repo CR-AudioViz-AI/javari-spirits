@@ -196,7 +196,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Search failed' }, { status: 500 });
     }
     
-    // Get facets for filtering UI
+    // Get facets for filtering UI. These are sidebar hints, not answers, and
+  // each one used an exact count over 1,563,965 rows — ten full scans per
+  // search, which is where 14 of the 14.1 seconds went. Planner estimates are
+  // the right precision for a "roughly this many" label.
     const facets = await getFacets(filters);
     
     // Calculate pagination info
@@ -282,7 +285,7 @@ async function getFacets(currentFilters: SearchFilters): Promise<Facets> {
     priceRanges.map(async (range) => {
       const { count } = await supabase
         .from('bv_spirits')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'planned', head: true })
         .gte('msrp', range.min)
         .lt('msrp', range.max);
       
@@ -301,7 +304,7 @@ async function getFacets(currentFilters: SearchFilters): Promise<Facets> {
     ratingRanges.map(async (range) => {
       const { count } = await supabase
         .from('bv_spirits')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'planned', head: true })
         .gte('community_rating', range.min);
       
       return { ...range, count: count || 0 };
