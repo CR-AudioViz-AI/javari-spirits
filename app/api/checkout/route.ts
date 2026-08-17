@@ -10,16 +10,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
-
+import { lazyAdminDb } from '@/lib/supabase/admin';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   // apiVersion managed by Stripe SDK
 });
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const supabase = lazyAdminDb();
 
 // Price IDs from Stripe Dashboard
 const PRICE_IDS: Record<string, string> = {

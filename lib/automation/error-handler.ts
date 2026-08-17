@@ -8,17 +8,13 @@
  * Timestamp: 2025-12-05 (Fixed v2)
  */
 
-import { createClient } from '@supabase/supabase-js'
-
+import { adminDb } from '@/lib/supabase/admin';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseInstance: any = null
 
 function getSupabase() {
   if (!supabaseInstance) {
-    supabaseInstance = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    supabaseInstance = adminDb()
   }
   return supabaseInstance
 }

@@ -17,13 +17,10 @@
  * 2025-12-04
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { lazyAdminDb } from '@/lib/supabase/admin';
 import OpenAI from 'openai';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const supabase = lazyAdminDb();
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY

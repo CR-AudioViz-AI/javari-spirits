@@ -15,18 +15,14 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { adminDb } from '@/lib/supabase/admin';
 import { toCategorySlug } from '@/lib/collection/category'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  )
+  return adminDb()
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {

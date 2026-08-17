@@ -6,14 +6,11 @@
 // Timestamp: 2025-12-03 12:45 PM EST
 // ============================================
 
-import { createClient } from '@supabase/supabase-js';
+import { adminDb } from '@/lib/supabase/admin';
 import OpenAI from 'openai';
 
 // Lazy-load Supabase client to avoid build-time errors
-const getSupabase = () => createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const getSupabase = () => adminDb();
 
 // Lazy-load OpenAI client to avoid build-time errors
 let openaiClient: OpenAI | null = null;

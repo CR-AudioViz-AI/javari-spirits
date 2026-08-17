@@ -12,8 +12,7 @@
  * 5. Category fallback (last resort)
  */
 
-import { createClient } from '@supabase/supabase-js';
-
+import { adminDb } from '@/lib/supabase/admin';
 // Types
 export interface SpiritImage {
   id?: string;
@@ -56,7 +55,7 @@ export class SpiritImagePipeline {
 
   constructor() {
     if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
-      this.supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      this.supabase = adminDb();
     }
   }
 

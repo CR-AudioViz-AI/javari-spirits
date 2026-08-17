@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
+import { lazyAnonDb } from '@/lib/supabase/admin';
 // Force dynamic rendering to avoid static build errors
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = lazyAnonDb();
 
 // Rarity order for sorting (higher number = more rare = shown first)
 const RARITY_ORDER: Record<string, number> = {
