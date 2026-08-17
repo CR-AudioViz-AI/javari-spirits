@@ -16,6 +16,7 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { toCategorySlug } from '@/lib/collection/category'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     domain: 'spirits',
     name: b.name.trim(),
     brand: b.brand ?? null,
-    category: b.category ?? null,
+    category: toCategorySlug(b.category, b.name),
     image_url: b.imageUrl ?? null,
     max_price: b.maxPrice ?? null,
     // 1 idle curiosity, 5 would drive across the state for it.
@@ -106,7 +107,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   if (acquired && b.addToShelf !== false) {
     const { error } = await supa.from('user_bottles').insert({
       user_id: b.userId,
-      name: row.name, brand: row.brand, category: row.category,
+      name: row.name, brand: row.brand, category: toCategorySlug(row.category, row.name),
       photo_url: row.image_url,
       quantity: 1, is_open: false, fill_level: null, status: 'sealed',
       purchase_price: b.paid ?? row.max_price ?? null,

@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { normaliseName } from '@/lib/collection/model'
+import { toCategorySlug } from '@/lib/collection/category'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       catalog_id: groupKey,
       name: b.name.trim(),
       brand: b.brand ?? null,
-      category: b.category ?? null,
+      category: toCategorySlug(b.category, b.name),
       bottle_size: b.bottleSize ?? null,
       barcode: b.barcode ?? null,
       quantity: 1,
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     catalog_id: groupKey,
     name: b.name.trim(),
     brand: b.brand ?? null,
-    category: b.category ?? null,
+    category: toCategorySlug(b.category, b.name),
     bottle_size: b.bottleSize ?? null,
     barcode: b.barcode ?? null,
     quantity: qty,
