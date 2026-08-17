@@ -37,6 +37,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const low = runningLow(cards)
 
   return NextResponse.json({
+    // Temporary: the row exists in the database and the service key works when
+    // queried directly, but this route returned zero cards. Surfacing the raw
+    // count separates "query found nothing" from "grouping dropped it".
+    _debug: { rawRows: (data ?? []).length, userId },
     cards: cards.map(c => ({ ...c, summary: describe(c) })),
     totals: {
       distinctSpirits: cards.length,
