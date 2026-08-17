@@ -14,9 +14,11 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
 /** Decode a JWT payload without verifying it. Enough to read role and ref. */
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.ADMIN_SECRET
   const auth = request.headers.get('authorization')
   if (!secret || auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS })
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const claims = key ? peek(key) : null
 
   const userId = request.nextUrl.searchParams.get('userId') ?? ''
-  const supa = createClient(url, key, { auth: { persistSession: false } })
+  const supa = adminDb()
 
   const { data, error } = await supa
     .from('user_bottles').select('*').eq('user_id', userId).limit(3)

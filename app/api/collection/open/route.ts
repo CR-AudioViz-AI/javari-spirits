@@ -10,42 +10,37 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  )
-}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let b: { userId: string; sealedRowId: string; fillLevel?: number; notes?: string }
   try {
     b = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
+    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
   if (!b.userId || !b.sealedRowId) {
-    return NextResponse.json({ error: 'userId and sealedRowId are required' }, { status: 400 })
+    return NextResponse.json({ error: 'userId and sealedRowId are required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
-  const supa = db()
+  const supa = adminDb()
   const { data: row, error: readErr } = await supa
     .from('user_bottles').select('*').eq('id', b.sealedRowId).eq('user_id', b.userId).single()
   if (readErr || !row) {
-    return NextResponse.json({ error: 'Bottle not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Bottle not found' }, { status: 404, headers: NO_STORE_HEADERS })
   }
   if (row.is_open) {
-    return NextResponse.json({ error: 'That bottle is already open' }, { status: 400 })
+    return NextResponse.json({ error: 'That bottle is already open' }, { status: 400, headers: NO_STORE_HEADERS })
   }
   const qty = Number(row.quantity ?? 0)
   if (qty < 1) {
-    return NextResponse.json({ error: 'No sealed bottles left on this card' }, { status: 400 })
+    return NextResponse.json({ error: 'No sealed bottles left on this card' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
   const today = new Date().toISOString().slice(0, 10)
@@ -70,7 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     storage_place: row.storage_place, photo_url: row.photo_url,
     rating: row.rating, notes: b.notes ?? null,
   }).select('id').single()
-  if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 })
+  if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500, headers: NO_STORE_HEADERS })
 
   if (qty === 1) {
     // The last sealed bottle became the open one, so the sealed row goes.
@@ -88,5 +83,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     message: qty - 1 === 0
       ? 'Opened your last sealed one.'
       : `Opened. ${qty - 1} sealed still on this card.`,
-  })
+  }, { headers: NO_STORE_HEADERS })
 }

@@ -9,18 +9,13 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  )
-}
 
 /** A standard 2oz pour from a 750ml bottle is about 8%. */
 const DRAM_PERCENT = 8
@@ -30,19 +25,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     b = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
+    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
   if (!b.userId || !b.bottleId) {
-    return NextResponse.json({ error: 'userId and bottleId are required' }, { status: 400 })
+    return NextResponse.json({ error: 'userId and bottleId are required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
-  const supa = db()
+  const supa = adminDb()
   const { data: row, error } = await supa
     .from('user_bottles').select('id,fill_level,is_open,name')
     .eq('id', b.bottleId).eq('user_id', b.userId).single()
-  if (error || !row) return NextResponse.json({ error: 'Bottle not found' }, { status: 404 })
+  if (error || !row) return NextResponse.json({ error: 'Bottle not found' }, { status: 404, headers: NO_STORE_HEADERS })
   if (!row.is_open) {
-    return NextResponse.json({ error: 'That bottle is still sealed. Open it first.' }, { status: 400 })
+    return NextResponse.json({ error: 'That bottle is still sealed. Open it first.' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
   const from = Number(row.fill_level ?? 100)
@@ -73,5 +68,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : to <= 20
         ? `Down to ${to}%. Running low.`
         : `Now at ${to}%.`,
-  })
+  }, { headers: NO_STORE_HEADERS })
 }

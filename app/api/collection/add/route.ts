@@ -14,20 +14,15 @@
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { adminDb, NO_STORE_HEADERS } from '@/lib/supabase/admin'
 import { normaliseName } from '@/lib/collection/model'
 import { toCategorySlug } from '@/lib/collection/category'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'
 
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  )
-}
 
 interface Body {
   userId: string
@@ -59,13 +54,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     b = (await request.json()) as Body
   } catch {
-    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
+    return NextResponse.json({ error: 'Body must be JSON' }, { status: 400, headers: NO_STORE_HEADERS })
   }
   if (!b.userId || !b.name?.trim()) {
-    return NextResponse.json({ error: 'userId and name are required' }, { status: 400 })
+    return NextResponse.json({ error: 'userId and name are required' }, { status: 400, headers: NO_STORE_HEADERS })
   }
 
-  const supa = db()
+  const supa = adminDb()
   const opened = Boolean(b.opened)
   const qty = opened ? 1 : Math.max(1, Math.floor(b.quantity ?? 1))
   const groupKey = b.catalogId ?? null
@@ -96,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       rating: b.rating ?? null,
       status: 'open',
     }).select('id').single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500, headers: NO_STORE_HEADERS })
     return NextResponse.json({
       ok: true, action: 'added-open', bottleId: data?.id,
       message: `Added as an open bottle at ${Math.round(b.fillLevel ?? 100)}%.`,
@@ -126,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { error } = await supa.from('user_bottles')
       .update({ quantity: (match.quantity as number) + qty, updated_at: new Date().toISOString() })
       .eq('id', match.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500, headers: NO_STORE_HEADERS })
     return NextResponse.json({
       ok: true, action: 'stacked', bottleId: match.id,
       quantity: (match.quantity as number) + qty,
@@ -156,10 +151,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     rating: b.rating ?? null,
     status: 'sealed',
   }).select('id').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500, headers: NO_STORE_HEADERS })
 
   return NextResponse.json({
     ok: true, action: 'created', bottleId: data?.id, quantity: qty,
     message: qty === 1 ? 'Added to your collection.' : `Added ${qty} sealed bottles.`,
-  })
+  }, { headers: NO_STORE_HEADERS })
 }
