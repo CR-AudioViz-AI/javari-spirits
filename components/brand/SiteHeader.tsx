@@ -12,8 +12,10 @@
 // thing to both is a header that helps neither.
 //
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { attemptSso } from '@/lib/auth/sso'
 
 const LINKS = [
   { href: '/shelf', label: 'My Shelf', authed: true },
@@ -25,6 +27,16 @@ const LINKS = [
 export default function SiteHeader() {
   const { user, loading, signOut } = useAuth()
   const authed = Boolean(user)
+  const ssoTried = useRef(false)
+
+  // Cross-domain sign-in. Sessions live in localStorage, which the browser scopes
+  // to one origin, so a session on craudiovizai.com is invisible here. This asks
+  // the identity origin once per tab and adopts the answer. See lib/auth/sso.ts.
+  useEffect(() => {
+    if (loading || authed || ssoTried.current) return
+    ssoTried.current = true
+    void attemptSso()
+  }, [loading, authed])
 
   return (
     <header
