@@ -75,6 +75,19 @@ export default function SpiritsPage() {
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
   const ITEMS_PER_PAGE = 20
 
+  // Seed from the URL. This page ignored ?search= and ?category= entirely, so
+  // every link into it — the homepage search box, the category pills, any shared
+  // or bookmarked result — landed on an unfiltered list of 1.5M rows. Read from
+  // window rather than useSearchParams to avoid forcing a Suspense boundary on
+  // an already-dynamic route.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    const q = p.get('search')
+    const c = p.get('category')
+    if (q) setSearchQuery(q)
+    if (c) setSelectedCategory(c.toLowerCase())
+  }, [])
+
   const fetchSpirits = useCallback(async () => {
     setLoading(true)
     setError(null)
