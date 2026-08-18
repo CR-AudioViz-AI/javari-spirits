@@ -1,5 +1,5 @@
 // app/programs/page.tsx — Awin Alcohol Affiliate Programs
-// Publisher ID: 2692370
+// Publisher id is an account identifier, not display copy — removed 2026-08-17
 // CR AudioViz AI · EIN 39-3646201 · May 2026
 import type { Metadata } from "next";
 export const metadata: Metadata = {
@@ -27,7 +27,6 @@ export default function ProgramsPage() {
     <div style={{ minHeight:"100vh", background:"#040912", color:"#e2e8f0", fontFamily:"system-ui" }}>
       <nav style={{ background:"#1E3A5F", padding:"0 20px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <a href="/" style={{ fontWeight:800, color:"#00B4D8", textDecoration:"none", fontSize:15 }}>🥃 Javari Spirits</a>
-        <span style={{ color:"#374151", fontSize:11 }}>Awin Publisher 2692370</span>
       </nav>
 
       <div style={{ maxWidth:960, margin:"0 auto", padding:"48px 20px 72px" }}>
@@ -53,7 +52,7 @@ export default function ProgramsPage() {
         </div>
 
         <p style={{ textAlign:"center", marginTop:32, fontSize:11, color:"#374151" }}>
-          Affiliate links · Awin Publisher ID: 2692370 · Must be 21+ · Please drink responsibly
+          Affiliate links · Must be 21+ · Please drink responsibly
         </p>
       </div>
     </div>

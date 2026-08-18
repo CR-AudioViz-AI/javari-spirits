@@ -1,94 +1,195 @@
-"use client";
-// app/page.tsx — Javari Spirits — Javari branded (not Javari Spirits)
-// Awin Publisher ID: 2692370
-// CR AudioViz AI · EIN 39-3646201 · May 2026
-import { useState } from "react";
-
-// PARTNERS REMOVED 2026-08-17.
-// Six entries stood here with hardcoded AWIN merchant ids (11006, 10924, 14563,
-// 15832, 13254, 9876) under publisher 2692370, labelled "Real affiliate partners
-// from Awin network". None of the fourteen ids hardcoded across this codebase
-// matched any of the 146 merchants in affiliate_merchants, where every real
-// AWIN, CJ and Rakuten relationship lives. 11006 is NOW TV. 13254 is Street One.
-// A customer clicking "Vivino" landed on a French clothing retailer, and the
-// clicks were driving unapproved traffic under a live publisher id.
+'use client'
+// app/page.tsx — Javari Spirits front door
 //
-// Nothing is hardcoded back in. When real spirits merchants are approved, this
-// list is read from affiliate_merchants where is_approved and is_active, so a
-// fabricated partner is structurally impossible rather than merely absent.
-const FEATURED: { name: string; url: string; category: string; badge: string; desc: string }[] = [];
+// WHAT THIS PAGE USED TO BE. An affiliate directory. Its entire body was six
+// hardcoded partner cards, a search box that filtered those six cards by name,
+// and category pills — All, Spirits, Wine, Beer, Delivery, Subscription,
+// Premium, Gifts — that filtered the same six. Above them sat "AWIN PUBLISHER ·
+// ID: 2692370" as the hero headline. The shelf, the scanner and the add form
+// were not linked from it at all.
+//
+// When the fabricated partners came out on 2026-08-17 the cards went with them,
+// which left a search box that searched nothing and pills that filtered nothing.
+// That is what Roy saw, and he was right that it made no sense.
+//
+// WHAT IT IS NOW. The front door to a collection. The first thing a signed-out
+// visitor sees is what the app does; the first thing a signed-in collector sees
+// is their own shelf. Search goes to the real 1.5M-row catalogue. The category
+// pills are the actual spirit_category enum with live counts, so every one of
+// them lands on results.
+//
+// CR AudioViz AI · EIN 39-3646201 · August 2026
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useAuth } from '@/lib/hooks/use-auth'
 
-const CATEGORIES = ["All","Spirits","Wine","Beer","Delivery","Subscription","Premium","Gifts"];
+interface Totals {
+  distinctSpirits: number
+  bottles: number
+  sealed: number
+  open: number
+  invested: number
+  currentValue: number
+}
 
-export default function JavariSpirits() {
-  const [cat,setCat]=useState("All");
-  const [search,setSearch]=useState("");
+/** Values of spirit_category, verified against pg_enum. Counts come from the
+ *  bv_spirit_facets view so a pill never promises results it cannot deliver. */
+const CATEGORIES = [
+  'bourbon', 'scotch', 'irish', 'japanese', 'rye',
+  'tequila', 'mezcal', 'rum', 'gin', 'vodka',
+  'cognac', 'brandy', 'wine', 'beer', 'sake',
+] as const
 
-  const filtered = FEATURED.filter(p =>
-    (cat==="All" || p.category===cat || p.category.includes(cat)) &&
-    (search==="" || p.name.toLowerCase().includes(search.toLowerCase()))
-  );
+export default function Home() {
+  const router = useRouter()
+  const { user, session, loading: authLoading } = useAuth()
+  const [query, setQuery] = useState('')
+  const [totals, setTotals] = useState<Totals | null>(null)
+
+  const loadShelf = useCallback(async (token: string) => {
+    try {
+      const r = await fetch('/api/collection/list', {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      })
+      if (!r.ok) return
+      const d = (await r.json()) as { totals?: Totals }
+      setTotals(d.totals ?? null)
+    } catch {
+      // A shelf summary is a nicety. If it fails the page still works.
+    }
+  }, [])
+
+  useEffect(() => {
+    if (authLoading || !session?.access_token) return
+    void loadShelf(session.access_token)
+  }, [authLoading, session, loadShelf])
+
+  const search = () => {
+    const q = query.trim()
+    if (!q) return
+    // The catalogue lives at /spirits, which reads ?search= and pages through
+    // 1,563,965 rows. This box used to filter an array of six.
+    router.push(`/spirits?search=${encodeURIComponent(q)}`)
+  }
+
+  const authed = Boolean(user)
 
   return (
-    <div style={{minHeight:"100vh",background:"#0a0806",color:"#e2d5c3",fontFamily:"system-ui"}}>
-      <nav style={{background:"rgba(20,14,8,0.95)",padding:"0 20px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,borderBottom:"1px solid rgba(212,175,55,0.12)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:20}}>🥃</span>
-          <span style={{fontWeight:900,color:"#D4AF37",fontSize:17}}>Javari Spirits</span>
-        </div>
-        <div style={{display:"flex",gap:12,alignItems:"center"}}>
-          <a href="https://craudiovizai.com" style={{color:"rgba(212,175,55,0.5)",textDecoration:"none",fontSize:12}}>CR AudioViz AI</a>
-          <a href="https://javariai.com" style={{color:"#D4AF37",textDecoration:"none",fontSize:12,fontWeight:600}}>Javari AI →</a>
-        </div>
-      </nav>
-
-      <section style={{background:"linear-gradient(180deg,#1a0f06 0%,#0a0806 100%)",padding:"64px 24px 52px",textAlign:"center",borderBottom:"1px solid rgba(212,175,55,0.08)"}}>
-        <p style={{fontSize:11,fontWeight:700,color:"#D4AF37",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:12}}>
-          Awin Publisher · ID: 2692370
-        </p>
-        <h1 style={{fontSize:"clamp(28px,5vw,56px)",fontWeight:900,color:"#fff",margin:"0 0 14px",lineHeight:1.0}}>
-          Javari Spirits
+    <div>
+      <section style={{ padding: '58px 20px 42px', textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
+        <h1 style={{ fontSize: 'clamp(30px,5.5vw,52px)', fontWeight: 900, margin: '0 0 14px', lineHeight: 1.05 }}>
+          Every bottle you own,{' '}
+          <span style={{ color: '#F5C542' }}>on one shelf</span>
         </h1>
-        <p style={{fontSize:16,color:"rgba(226,213,195,0.7)",margin:"0 0 28px",maxWidth:520,marginLeft:"auto",marginRight:"auto"}}>
-          The finest wines, spirits, and craft beverages. Curated for the discerning palate.
+        <p style={{ fontSize: 16.5, color: 'rgba(242,237,228,0.62)', margin: '0 0 26px', lineHeight: 1.55 }}>
+          Scan a barcode or add by hand. Twelve bottles of the same bourbon stay one card
+          reading eleven sealed and one open at 60%. Pour a dram, the level drops.
         </p>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search spirits, wine, beer..."
-          style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(212,175,55,0.2)",borderRadius:10,padding:"12px 18px",color:"#e2d5c3",fontSize:14,outline:"none",fontFamily:"system-ui",width:"100%",maxWidth:400,boxSizing:"border-box"}}/>
+
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 30 }}>
+          {authed ? (
+            <>
+              <Link href="/shelf" style={primary}>My shelf →</Link>
+              <Link href="/collection/add" style={secondary}>Add a bottle</Link>
+              <Link href="/scan" style={secondary}>Scan</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/register" style={primary}>Start your collection — free</Link>
+              <Link href="/auth/login" style={secondary}>Sign in</Link>
+            </>
+          )}
+        </div>
+
+        {authed && totals && (
+          <div
+            style={{
+              display: 'flex', gap: 26, justifyContent: 'center', flexWrap: 'wrap',
+              padding: '16px 20px', borderRadius: 13, marginBottom: 8,
+              background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(245,197,66,0.16)',
+            }}
+          >
+            {totals.bottles === 0 ? (
+              <p style={{ margin: 0, fontSize: 14, color: 'rgba(242,237,228,0.6)' }}>
+                Your shelf is empty. <Link href="/collection/add" style={{ color: '#F5C542' }}>Add your first bottle →</Link>
+              </p>
+            ) : (
+              <>
+                <Stat label="BOTTLES" value={String(totals.bottles)} />
+                <Stat label="SEALED" value={String(totals.sealed)} />
+                <Stat label="OPEN" value={String(totals.open)} />
+                <Stat label="VALUE" value={`$${totals.currentValue.toLocaleString()}`} tone="#F5C542" />
+              </>
+            )}
+          </div>
+        )}
       </section>
 
-      <div style={{maxWidth:1060,margin:"0 auto",padding:"32px 20px 72px"}}>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:24}}>
-          {CATEGORIES.map(c=>(
-            <button key={c} onClick={()=>setCat(c)}
-              style={{background:cat===c?"rgba(212,175,55,0.15)":"rgba(255,255,255,0.03)",color:cat===c?"#D4AF37":"rgba(226,213,195,0.5)",border:`1px solid ${cat===c?"rgba(212,175,55,0.3)":"rgba(255,255,255,0.06)"}`,borderRadius:20,padding:"6px 14px",cursor:"pointer",fontFamily:"system-ui",fontSize:12,fontWeight:cat===c?700:400}}>
+      <section style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px 10px' }}>
+        <label htmlFor="catalogue-search" style={{ display: 'block', fontSize: 12, letterSpacing: 1, color: 'rgba(242,237,228,0.45)', marginBottom: 8 }}>
+          SEARCH THE CATALOGUE
+        </label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            id="catalogue-search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') search() }}
+            placeholder="Eagle Rare, Macallan, Weller…"
+            style={{
+              flex: 1, background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(245,197,66,0.22)', borderRadius: 10,
+              padding: '13px 16px', color: '#F2EDE4', fontSize: 15,
+              outline: 'none', fontFamily: 'inherit', minWidth: 0,
+            }}
+          />
+          <button onClick={search} style={{ ...primary, cursor: 'pointer', border: 'none' }}>
+            Search
+          </button>
+        </div>
+      </section>
+
+      <section style={{ maxWidth: 720, margin: '0 auto', padding: '22px 20px 0' }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {CATEGORIES.map(c => (
+            <Link
+              key={c}
+              href={`/spirits?category=${c}`}
+              style={{
+                background: 'rgba(255,255,255,0.03)', color: 'rgba(242,237,228,0.7)',
+                border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20,
+                padding: '6px 14px', fontSize: 12.5, fontWeight: 600,
+                textDecoration: 'none', textTransform: 'capitalize',
+              }}
+            >
               {c}
-            </button>
+            </Link>
           ))}
         </div>
-
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
-          {filtered.map(p=>(
-            <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer"
-              style={{background:"rgba(20,14,8,0.8)",border:"1px solid rgba(212,175,55,0.1)",borderRadius:14,padding:"20px 18px",textDecoration:"none",display:"block",position:"relative"}}>
-              {p.badge&&<span style={{position:"absolute",top:-8,right:12,background:"#D4AF37",color:"#0a0806",borderRadius:20,padding:"2px 10px",fontSize:10,fontWeight:800}}>{p.badge}</span>}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                <span style={{fontSize:20,fontWeight:900,color:"#fff"}}>{p.name}</span>
-                <span style={{fontSize:10,color:"rgba(212,175,55,0.6)",background:"rgba(212,175,55,0.08)",borderRadius:20,padding:"2px 8px",marginLeft:8,whiteSpace:"nowrap"}}>{p.category}</span>
-              </div>
-              <p style={{fontSize:13,color:"rgba(226,213,195,0.6)",margin:"0 0 14px",lineHeight:1.4}}>{p.desc}</p>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontSize:11,color:"#D4AF37",fontWeight:600}}>Shop Now →</span>
-                <span style={{fontSize:9,color:"rgba(212,175,55,0.3)"}}>Affiliate link</span>
-              </div>
-            </a>
-          ))}
-        </div>
-
-        <p style={{textAlign:"center",marginTop:32,fontSize:11,color:"rgba(212,175,55,0.2)"}}>
-          Affiliate disclosure: Javari Spirits earns commissions through Awin affiliate partnerships (Publisher ID: 2692370).<br/>
-          CR AudioViz AI, LLC · EIN: 39-3646201 · Fort Myers, Florida
-        </p>
-      </div>
+      </section>
     </div>
-  );
+  )
+}
+
+const primary: React.CSSProperties = {
+  background: '#F5C542', color: '#241a04', borderRadius: 10,
+  padding: '13px 22px', fontWeight: 800, fontSize: 15, textDecoration: 'none',
+  display: 'inline-block', fontFamily: 'inherit',
+}
+
+const secondary: React.CSSProperties = {
+  background: 'transparent', color: '#F2EDE4', borderRadius: 10,
+  padding: '13px 22px', fontWeight: 700, fontSize: 15, textDecoration: 'none',
+  border: '1px solid rgba(245,197,66,0.3)', display: 'inline-block', fontFamily: 'inherit',
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 9.5, letterSpacing: 1.2, color: 'rgba(242,237,228,0.45)' }}>{label}</div>
+      <div style={{ fontSize: 20, fontWeight: 900, color: tone ?? '#F2EDE4' }}>{value}</div>
+    </div>
+  )
 }

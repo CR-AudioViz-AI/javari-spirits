@@ -1,8 +1,17 @@
 // app/layout.tsx — javari-spirits
-// Universal brand shell — EIN, auth CTA, metadata
-// CR AudioViz AI · EIN 39-3646201 · May 2026
+//
+// ONE header, ONE footer. This file used to render its own fixed bar and
+// app/page.tsx rendered a second nav directly beneath it, so the site said
+// "Javari Spirits" twice before you reached any content. Both are components
+// now, so every page gets the same shell and there is one place to change it.
+//
+// CR AudioViz AI · EIN 39-3646201 · August 2026
 import type { Metadata } from 'next'
+import SiteHeader from '@/components/brand/SiteHeader'
+import SiteFooter from '@/components/brand/SiteFooter'
+
 export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   // 2026-08-16: the icons and share card existed in public/ but nothing pointed
   // at them, so every share rendered as a blank grey rectangle and every tab
@@ -16,30 +25,31 @@ export const metadata: Metadata = {
   // string and a preview host all competed for the same content.
   metadataBase: new URL('https://javarispirits.com'),
   alternates: { canonical: '/' },
-  title: 'Javari Spirits',
-  description: 'Javari Spirits — powered by Javari AI on the CR AudioViz AI platform',
+  title: 'Javari Spirits — track every bottle you own',
+  description:
+    'Your whiskey, wine and spirits collection on one shelf. Scan a barcode, track what is sealed and what is open, and know what it is worth.',
   twitter: { card: 'summary_large_image', images: ['/og-image.png'] },
-  openGraph: { title: 'Javari Spirits', type: 'website', images: [{ url: '/og-image.png', width: 1200, height: 630 }] },
+  openGraph: {
+    title: 'Javari Spirits — track every bottle you own',
+    description: 'Your whiskey, wine and spirits collection on one shelf.',
+    type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+  },
 }
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui,sans-serif' }}>
-        <div style={{ background: 'rgba(7,8,15,0.95)', backdropFilter: 'blur(8px)', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, borderBottom: '1px solid rgba(99,102,241,0.12)' }}>
-          <a href="https://craudiovizai.com" style={{ color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 16 }}>🥃</span>
-            <span style={{ color: '#d97706' }}>Javari Spirits</span>
-            <span style={{ color: '#374151', fontSize: 10 }}>· CR AudioViz AI · EIN 39-3646201</span>
-          </a>
-          <a href="https://craudiovizai.com/auth/signup" style={{ background: '#d97706', color: '#000', borderRadius: 6, padding: '5px 14px', fontSize: 11, fontWeight: 700, textDecoration: 'none' }}>Sign Up Free →</a>
-        </div>
-        <div style={{ paddingTop: 48 }}>{children}</div>
-        <footer style={{ background: '#050609', borderTop: '1px solid rgba(255,255,255,0.04)', padding: '16px 20px', textAlign: 'center' }}>
-          <p style={{ color: '#1f2937', fontSize: 11, margin: 0 }}>
-            © 2026 CR AudioViz AI, LLC — EIN: 39-3646201 · Fort Myers, Florida ·{' '}
-            <a href="https://craudiovizai.com" style={{ color: '#d97706', textDecoration: 'none' }}>craudiovizai.com</a>
-          </p>
-        </footer>
+      <body
+        style={{
+          margin: 0, padding: 0, background: '#0D0E11', color: '#F2EDE4',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          display: 'flex', flexDirection: 'column', minHeight: '100vh',
+        }}
+      >
+        <SiteHeader />
+        <main style={{ flex: 1 }}>{children}</main>
+        <SiteFooter />
       </body>
     </html>
   )
