@@ -1,3 +1,12 @@
+// @auth-reviewed: this is a legitimate use of the cookie-based client.
+// exchangeCodeForSession is the operation that WRITES the session, and it needs
+// cookie set/remove access to do it. Every OTHER use of a cookie client on this
+// platform was READING a session that nothing writes - sessions live in
+// localStorage - which is why 32 core routes and 11 more across the fleet
+// answered 401 to everyone until 2026-08-19.
+//
+// Do not "fix" this one to requireUser(): there is no bearer token yet at this
+// point in the flow. This route is what creates it.
 // app/auth/callback/route.ts
 // BarrelVerse Auth Callback Handler
 
