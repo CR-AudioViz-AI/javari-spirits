@@ -1,11 +1,8 @@
 // app/api/ai/sommelier/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
-import Anthropic from '@anthropic-ai/sdk';
+import { ai } from '@/lib/platform';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
 
 const supabase = lazyAdminDb();
 
@@ -106,20 +103,41 @@ export async function POST(request: NextRequest) {
       enhancedSystemPrompt += `\n\nUser preferences: ${context.preferences}`;
     }
 
-    // Call Claude
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      system: enhancedSystemPrompt,
-      messages: [
-        ...conversationHistory,
-        { role: 'user', content: message },
-      ],
-    });
+    // 2026-09-03: THIS CALLED ANTHROPIC DIRECTLY and was BROKEN IN PRODUCTION.
+    // Verified live: POST with a valid body returned HTTP 500 carrying
+    // {"error":"401 authentication_error: API key is invalid."} - so the flagship
+    // AI feature of this app failed on every call, and the raw upstream error was
+    // passed to the client, leaking the provider and the failure mode.
+    //
+    // Fixing the key alone would have made it WORK AND STILL BE WRONG. The COST
+    // LAW is explicit: Javari uses free or low-cost models - Groq llama-3.3-70b,
+    // then gemini-flash, then Groq gpt-oss-120b - and NOT Claude. This route
+    // bypassed the cascade entirely, at Anthropic pricing per recommendation.
+    //
+    // lib/platform.ts `ai.generate(prompt, system)` already implements that
+    // cascade in this repo and is what javari/chat uses. Using it rather than
+    // adding a second implementation - this ecosystem has thirteen duplicate
+    // modules from answering one need twice.
+    //
+    // Conversation history is folded into the prompt because ai.generate takes a
+    // single prompt rather than a message array. Same information, one string.
+    const historyText = conversationHistory
+      .map((m: { role: string; content: string }) => `${m.role}: ${m.content}`)
+      .join('\n');
+    const fullPrompt = historyText
+      ? `${historyText}\nuser: ${message}`
+      : message;
 
-    const assistantMessage = response.content[0].type === 'text' 
-      ? response.content[0].text 
-      : '';
+    const assistantMessage = await ai.generate(fullPrompt, enhancedSystemPrompt);
+
+    if (!assistantMessage || assistantMessage.trim().length === 0) {
+      // Never return an empty recommendation dressed as success - that is the
+      // fake-success shape this audit has removed eighty times.
+      return NextResponse.json(
+        { error: 'The sommelier is temporarily unavailable. Please try again.' },
+        { status: 503 },
+      );
+    }
 
     // Save conversation
     const newSessionId = sessionId || crypto.randomUUID();
