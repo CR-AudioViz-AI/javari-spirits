@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       enhancedSystemPrompt += `\n\nUser preferences: ${context.preferences}`;
     }
 
-    // 2026-09-03: THIS CALLED ANTHROPIC DIRECTLY and was BROKEN IN PRODUCTION.
+    // 2026-08-24: THIS CALLED ANTHROPIC DIRECTLY and was BROKEN IN PRODUCTION.
     // Verified live: POST with a valid body returned HTTP 500 carrying
     // {"error":"401 authentication_error: API key is invalid."} - so the flagship
     // AI feature of this app failed on every call, and the raw upstream error was
