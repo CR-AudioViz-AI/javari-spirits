@@ -149,14 +149,14 @@ export async function POST(request: NextRequest) {
           session_id: newSessionId,
           role: 'user',
           content: message,
-          tokens_used: response.usage?.input_tokens,
+          tokens_used: null,
         },
         {
           user_id: userId,
           session_id: newSessionId,
           role: 'assistant',
           content: assistantMessage,
-          tokens_used: response.usage?.output_tokens,
+          tokens_used: null,
         },
       ]);
     }
@@ -164,7 +164,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: assistantMessage,
       sessionId: newSessionId,
-      tokensUsed: response.usage?.input_tokens + response.usage?.output_tokens,
+      // Omitted rather than reported as 0 - the cascade does not surface usage,
+      // and a zero here would be a fabricated metric.
+      tokensUsed: null,
     });
   } catch (error: any) {
     console.error('AI Sommelier error:', error);
