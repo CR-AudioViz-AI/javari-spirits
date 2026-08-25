@@ -191,7 +191,7 @@ export const ai = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ}` },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 2048,
+          model: 'openai/gpt-oss-20b', max_tokens: 2048,
           messages: [...(system ? [{ role: 'system', content: system }] : []), { role: 'user', content: prompt }],
         }),
       })
