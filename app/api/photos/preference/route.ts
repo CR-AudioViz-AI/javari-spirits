@@ -7,10 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, anonDb } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
+import { secretKey, publishableKey, supabaseUrl } from "@craudioviz/platform-sdk";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_URL = supabaseUrl();
+const supabaseServiceKey = secretKey();
+const supabaseAnonKey = publishableKey();
 
 function getServiceClient() {
   return adminDb();

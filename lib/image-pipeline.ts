@@ -13,6 +13,7 @@
  */
 
 import { adminDb } from '@/lib/supabase/admin';
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
 // Types
 export interface SpiritImage {
   id?: string;
@@ -44,8 +45,8 @@ export interface ImageSearchResult {
 
 // Configuration
 const OPENVERSE_API_KEY = process.env.OPENVERSE_API_KEY || '';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPABASE_URL = supabaseUrl();
+const SUPABASE_SERVICE_KEY = secretKey();
 
 /**
  * Main Image Pipeline Class

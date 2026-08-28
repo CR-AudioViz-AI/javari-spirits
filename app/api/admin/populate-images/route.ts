@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
+const SUPABASE_URL = supabaseUrl();
+const SUPABASE_SERVICE_KEY = secretKey();
 const supabase = lazyAdminDb();
 
 interface ImageResult {

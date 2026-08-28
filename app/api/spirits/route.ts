@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAnonDb } from '@/lib/supabase/admin';
+import { publishableKey, supabaseUrl } from "@craudioviz/platform-sdk";
 // Force dynamic rendering to avoid static build errors
 export const dynamic = 'force-dynamic';
 
 // Create Supabase client with anon key for public read access
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_URL = supabaseUrl();
+const supabaseAnonKey = publishableKey();
 
 const supabase = lazyAnonDb();
 

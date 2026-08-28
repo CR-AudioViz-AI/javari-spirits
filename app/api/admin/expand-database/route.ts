@@ -7,8 +7,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/supabase/admin';
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
+const SUPABASE_URL = supabaseUrl();
+const supabaseServiceKey = secretKey();
 
 function getSupabase() {
   return adminDb();
