@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
 // Supabase client with service role for storage access
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const SUPABASE_URL = supabaseUrl();
+const supabaseServiceKey = secretKey();
 const supabase = lazyAdminDb();
 
 const BUCKET_NAME = 'spirit-images';
@@ -75,7 +76,7 @@ async function uploadImage(spiritId: string, imageBuffer: Buffer): Promise<strin
     return null;
   }
   
-  return `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${filename}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${filename}`;
 }
 
 // Process a single spirit
@@ -207,7 +208,7 @@ export async function GET(request: NextRequest) {
       uploaded: updates.length,
       remaining: count || 0,
       duration: Date.now() - startTime,
-      storageUrl: `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/`,
+      storageUrl: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/`,
     });
     
   } catch (error) {

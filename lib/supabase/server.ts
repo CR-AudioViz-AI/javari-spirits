@@ -4,13 +4,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/lib/types/database'
+import { secretKey, publishableKey, supabaseUrl } from "@craudioviz/platform-sdk";
 
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl(),
+    publishableKey(),
     {
       cookies: {
         getAll() {
@@ -33,8 +34,8 @@ export async function createServerSupabaseClient() {
 // Admin client with service role (use with caution)
 export function createAdminClient() {
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl(),
+    secretKey(),
     {
       cookies: {
         getAll: () => [],

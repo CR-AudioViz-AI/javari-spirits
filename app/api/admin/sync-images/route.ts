@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
+const SUPABASE_URL = supabaseUrl();
+const supabaseServiceKey = secretKey();
 const supabase = lazyAdminDb();
 
 const BUCKET_NAME = 'spirit-images';
@@ -59,7 +60,7 @@ async function downloadAndUpload(spiritId: string, sourceUrl: string): Promise<s
       return null;
     }
     
-    return supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
+    return SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
   } catch (e) {
     console.log('Error for ' + spiritId + ': ' + (e instanceof Error ? e.message : 'Unknown'));
     return null;
@@ -82,7 +83,7 @@ export async function GET() {
       synced: synced || 0,
       remaining: (total || 0) - (synced || 0),
       percentComplete: total ? Math.round(((synced || 0) / total) * 100) : 0,
-      storageUrl: supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/',
+      storageUrl: SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/',
     });
   } catch (error) {
     return NextResponse.json({ error: 'Database error' }, { status: 500 });

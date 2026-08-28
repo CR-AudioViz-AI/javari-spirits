@@ -13,6 +13,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { publishableKey, supabaseUrl } from "@craudioviz/platform-sdk";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -22,8 +23,8 @@ export async function GET(request: Request) {
   if (code) {
     const cookieStore = await cookies()
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl(),
+      publishableKey(),
       {
         cookies: {
           getAll() {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+import { secretKey, supabaseUrl } from "@craudioviz/platform-sdk";
+const SUPABASE_URL = supabaseUrl();
+const supabaseServiceKey = secretKey();
 
 const supabase = lazyAdminDb();
 
@@ -62,7 +63,7 @@ async function downloadAndUpload(imageUrl: string, spiritId: string): Promise<st
       return null;
     }
     
-    return supabaseUrl + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
+    return SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/' + filename;
   } catch (error) {
     console.error('Error processing ' + spiritId + ':', error);
     return null;
@@ -175,7 +176,7 @@ export async function GET() {
     totalSpirits: count,
     bucketName: BUCKET_NAME,
     bucketExists,
-    supabaseUrl,
+    SUPABASE_URL,
     error: error?.message
   });
 }
