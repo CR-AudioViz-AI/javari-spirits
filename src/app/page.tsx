@@ -28,7 +28,7 @@ interface BottleInfo {
   confidence: number
 }
 
-export default function Javari SpiritsPage() {
+export default function JavariSpiritsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('collection')
   const [collection, setCollection] = useState<any[]>([])
   const [wishlist, setWishlist] = useState<string[]>([])
