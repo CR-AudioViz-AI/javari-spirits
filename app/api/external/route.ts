@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { urlSegment } from '@craudioviz/platform-sdk/lib/egress-guard';
 const supabase = lazyAdminDb();
 
 // FREE API ENDPOINTS
@@ -13,7 +14,7 @@ const FREE_APIS = {
     search: (name: string) => `https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${encodeURIComponent(name)}`,
     random: "https://www.thecocktaildb.com/api/json/v1/1/random.php",
     byIngredient: (ingredient: string) => `https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`,
-    lookup: (id: string) => `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${id}`,
+    lookup: (id: string) => `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${urlSegment(id, /^[0-9]{1,10}$/)}`,
     listCategories: "https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list",
     listIngredients: "https://www.thecocktaildb.com/api/json/v1/1/list.php?i=list",
   },
@@ -32,20 +33,22 @@ const FREE_APIS = {
     search: (name: string) => `https://api.openbrewerydb.org/v1/breweries/search?query=${encodeURIComponent(name)}`,
     byCity: (city: string) => `https://api.openbrewerydb.org/v1/breweries?by_city=${encodeURIComponent(city)}`,
     byState: (state: string) => `https://api.openbrewerydb.org/v1/breweries?by_state=${encodeURIComponent(state)}`,
-    byType: (type: string) => `https://api.openbrewerydb.org/v1/breweries?by_type=${type}`,
+    byType: (type: string) => `https://api.openbrewerydb.org/v1/breweries?by_type=${urlSegment(type, /^[a-z_]{1,20}$/)}`,
     random: "https://api.openbrewerydb.org/v1/breweries/random",
   },
   
   // Open Food Facts - Product Database - FREE
   openFoodFacts: {
-    product: (barcode: string) => `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+    // A PATH segment, not a query value — this is the one that lets ../ walk
+    // out of the product endpoint entirely.
+    product: (barcode: string) => `https://world.openfoodfacts.org/api/v0/product/${urlSegment(barcode, /^[0-9]{6,14}$/)}.json`,
     search: (query: string) => `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1`,
     category: (category: string) => `https://world.openfoodfacts.org/category/${encodeURIComponent(category)}.json`,
   },
   
   // UPC Item DB - Barcode Lookup - FREE (limited)
   upcItemDB: {
-    lookup: (upc: string) => `https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`,
+    lookup: (upc: string) => `https://api.upcitemdb.com/prod/trial/lookup?upc=${urlSegment(upc, /^[0-9]{6,14}$/)}`,
   },
   
   // WikiData - Spirit/Distillery Info - FREE

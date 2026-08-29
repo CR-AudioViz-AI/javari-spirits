@@ -3,6 +3,7 @@
 // Free APIs: Open-Meteo (no API key needed), IP-API for geolocation
 
 import { NextRequest, NextResponse } from "next/server";
+import { urlSegment } from '@craudioviz/platform-sdk/lib/egress-guard';
 
 // Free weather API - no API key required!
 const OPEN_METEO = {
@@ -14,7 +15,10 @@ const OPEN_METEO = {
 
 // Free IP geolocation
 const IP_API = {
-  lookup: (ip: string) => `http://ip-api.com/json/${ip}?fields=status,country,regionName,city,lat,lon,timezone`,
+  // The ip comes from a query parameter or the X-Forwarded-For header, both
+  // caller-controlled. Shape-checked as an IPv4/IPv6 literal and encoded.
+  lookup: (ip: string) =>
+    `http://ip-api.com/json/${urlSegment(ip, /^[0-9a-fA-F:.]{3,45}$/)}?fields=status,country,regionName,city,lat,lon,timezone`,
 };
 
 // Tasting condition recommendations based on weather

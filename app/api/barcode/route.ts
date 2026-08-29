@@ -1,6 +1,7 @@
 // app/api/barcode/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { urlSegment } from '@craudioviz/platform-sdk/lib/egress-guard';
 const supabase = lazyAdminDb();
 
 // UPC Database API (free tier)
@@ -42,7 +43,9 @@ export async function GET(request: NextRequest) {
 
   // 2. Try Open Food Facts (free, no key needed)
   try {
-    const offResponse = await fetch(`${OFF_API_URL}/${barcode}.json`);
+    // A barcode is digits. Anything else is not a barcode, and interpolating
+    // it raw lets ../ walk out of the product endpoint.
+    const offResponse = await fetch(`${OFF_API_URL}/${urlSegment(barcode, /^[0-9]{6,14}$/)}.json`);
     const offData = await offResponse.json();
     
     if (offData.status === 1 && offData.product) {
