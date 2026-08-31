@@ -21,9 +21,17 @@ import OpenAI from 'openai';
 
 const supabase = lazyAdminDb();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+// 2026-08-31: LAZY, not module scope. A OpenAI client constructed here runs
+// during `next build` when Next collects page data, so the BUILD would need a
+// live OPENAI_API_KEY — and the vault cannot serve a build. Constructing on first use
+// means the key is read when a request arrives, after hydration has run.
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
 
 // ============================================
 // TYPES
@@ -287,7 +295,7 @@ Provide JSON response:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
@@ -492,7 +500,7 @@ Provide JSON:
 }`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
@@ -582,7 +590,7 @@ Return JSON:
 }`;
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' }
