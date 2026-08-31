@@ -3,9 +3,17 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { lazyAdminDb } from '@/lib/supabase/admin';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+// 2026-08-31: LAZY, not module scope. A Stripe client constructed here runs
+// during `next build` when Next collects page data, so the BUILD would need a
+// live STRIPE_SECRET_KEY — and the vault cannot serve a build. Constructing on first use
+// means the key is read when a request arrives, after hydration has run.
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+  }
+  return _stripe;
+}
 
 const supabase = lazyAdminDb();
 
@@ -18,7 +26,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
     console.error(`Webhook signature verification failed: ${err.message}`);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
