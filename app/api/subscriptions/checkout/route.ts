@@ -2,9 +2,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { lazyAdminDb } from '@/lib/supabase/admin';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
+// 2026-08-31: LAZY, not module scope. A Stripe client constructed here runs
+// during `next build` when Next collects page data, so the BUILD would need a
+// live STRIPE_SECRET_KEY — and the vault cannot serve a build. Constructing on first use
+// means the key is read when a request arrives, after hydration has run.
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+  }
+  return _stripe;
+}
 
 const supabase = lazyAdminDb();
 
@@ -78,7 +86,7 @@ export async function POST(request: NextRequest) {
         .eq("id", userId)
         .single();
 
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: userData?.email,
         name: userData?.full_name,
         metadata: { userId },
@@ -95,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       payment_method_types: ["card"],
       line_items: [
