@@ -12,6 +12,115 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      // 2026-09-01: hidden_cards, user_digital_cards and discovery_events added,
+      // GENERATED from the live schema.
+      //
+      // Those three tables DID NOT EXIST until today. app/api/hidden-cards/route.ts
+      // has been inserting into them and calling add_user_rewards() since it was
+      // written, so every card discovery failed at runtime. Three TypeScript errors
+      // were reporting it and nobody could see them: this repo had no typecheck
+      // workflow until 2026-08-31.
+      //
+      // This file is hand-maintained and declares 12 tables against a database with
+      // 381. That is the same drift as HYDRATE_KEYS (39 of 181) and the backup table
+      // list (36 of 378). It should be generated — platform-sdk/tools/generate-types.py
+      // already does exactly this for the whole schema.
+      discovery_events: {
+        Row: {
+          id: string
+          user_id: string
+          card_id: string
+          location: string | null
+          is_foil: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          card_id: string
+          location?: string | null
+          is_foil?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          card_id?: string
+          location?: string | null
+          is_foil?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      hidden_cards: {
+        Row: {
+          id: string
+          name: string
+          series: string | null
+          rarity: string
+          is_secret: boolean
+          xp_reward: number
+          credit_reward: number
+          total_supply: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          series?: string | null
+          rarity?: string
+          is_secret?: boolean
+          xp_reward?: number
+          credit_reward?: number
+          total_supply?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          series?: string | null
+          rarity?: string
+          is_secret?: boolean
+          xp_reward?: number
+          credit_reward?: number
+          total_supply?: number | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_digital_cards: {
+        Row: {
+          id: string
+          user_id: string
+          card_id: string
+          discovered_at: string
+          discovery_location: string | null
+          instance_number: number | null
+          is_foil: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          card_id: string
+          discovered_at?: string
+          discovery_location?: string | null
+          instance_number?: number | null
+          is_foil?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          card_id?: string
+          discovered_at?: string
+          discovery_location?: string | null
+          instance_number?: number | null
+          is_foil?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
       bv_profiles: {
         Row: {
           id: string
