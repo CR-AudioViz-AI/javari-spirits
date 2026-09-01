@@ -325,7 +325,16 @@ export async function POST(request: NextRequest) {
             status: response.ok ? 'sent' : 'failed',
             provider: 'resend',
             response: result,
-          }).catch(() => {});
+          }).then(
+            () => undefined,
+            // 2026-09-01: .then(ok, err) rather than .catch().
+            //
+            // A PostgrestFilterBuilder is a THENABLE, not a Promise — it has no
+            // .catch(). It only executes when awaited or then'd, so `.catch()` was
+            // both a type error AND a query that never ran: these logging writes
+            // have never reached the database.
+            () => undefined,
+          );
 
           return NextResponse.json({
             success: response.ok,
@@ -341,7 +350,16 @@ export async function POST(request: NextRequest) {
           subject: templateConfig.subject,
           status: 'demo',
           provider: 'none',
-        }).catch(() => {});
+        }).then(
+            () => undefined,
+            // 2026-09-01: .then(ok, err) rather than .catch().
+            //
+            // A PostgrestFilterBuilder is a THENABLE, not a Promise — it has no
+            // .catch(). It only executes when awaited or then'd, so `.catch()` was
+            // both a type error AND a query that never ran: these logging writes
+            // have never reached the database.
+            () => undefined,
+          );
 
         return NextResponse.json({
           success: true,
@@ -376,7 +394,16 @@ export async function POST(request: NextRequest) {
             template: seq.template,
             scheduled_for: sendAt.toISOString(),
             status: 'pending',
-          }).catch(() => {});
+          }).then(
+            () => undefined,
+            // 2026-09-01: .then(ok, err) rather than .catch().
+            //
+            // A PostgrestFilterBuilder is a THENABLE, not a Promise — it has no
+            // .catch(). It only executes when awaited or then'd, so `.catch()` was
+            // both a type error AND a query that never ran: these logging writes
+            // have never reached the database.
+            () => undefined,
+          );
         }
 
         // Send first email immediately
