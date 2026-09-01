@@ -65,26 +65,34 @@ export type Database = {
       }
       hidden_cards: {
         Row: {
-          id: string
+          id?: string
           name: string
-          series: string | null
+          series?: string | null
           rarity: string
           is_secret: boolean
           xp_reward: number
           credit_reward: number
-          total_supply: number | null
-          created_at: string
+          created_at?: string
+          description?: string | null
+          image_url?: string | null
+          max_supply?: number | null
+          unlock_code?: string | null
+          location_hint?: string | null
         }
         Insert: {
           id?: string
           name: string
           series?: string | null
-          rarity?: string
-          is_secret?: boolean
-          xp_reward?: number
-          credit_reward?: number
-          total_supply?: number | null
+          rarity: string
+          is_secret: boolean
+          xp_reward: number
+          credit_reward: number
           created_at?: string
+          description?: string | null
+          image_url?: string | null
+          max_supply?: number | null
+          unlock_code?: string | null
+          location_hint?: string | null
         }
         Update: {
           id?: string
@@ -94,8 +102,12 @@ export type Database = {
           is_secret?: boolean
           xp_reward?: number
           credit_reward?: number
-          total_supply?: number | null
           created_at?: string
+          description?: string | null
+          image_url?: string | null
+          max_supply?: number | null
+          unlock_code?: string | null
+          location_hint?: string | null
         }
         Relationships: []
       }
