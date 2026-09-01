@@ -61,7 +61,22 @@ export type Database = {
           is_foil?: boolean
           created_at?: string
         }
-        Relationships: []
+        // 2026-09-01: the foreign key is DECLARED here, not just in the database.
+        //
+        // The route selects `card:hidden_cards(*)` — an embedded join — and
+        // supabase-js types that join from this array. An empty Relationships meant
+        // the join produced no type, so `c.card` did not exist on the row and both
+        // reduce callbacks failed. The FK exists in Postgres; the type had to be
+        // told about it too.
+        Relationships: [
+          {
+            foreignKeyName: "discovery_events_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "hidden_cards"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       hidden_cards: {
         Row: {
@@ -142,7 +157,22 @@ export type Database = {
           is_foil?: boolean
           created_at?: string
         }
-        Relationships: []
+        // 2026-09-01: the foreign key is DECLARED here, not just in the database.
+        //
+        // The route selects `card:hidden_cards(*)` — an embedded join — and
+        // supabase-js types that join from this array. An empty Relationships meant
+        // the join produced no type, so `c.card` did not exist on the row and both
+        // reduce callbacks failed. The FK exists in Postgres; the type had to be
+        // told about it too.
+        Relationships: [
+          {
+            foreignKeyName: "user_digital_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "hidden_cards"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       bv_profiles: {
         Row: {
@@ -695,6 +725,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      // 2026-09-01: the RPC signature. My first attempt to add this was skipped by a
+      // guard that tested `'add_user_rewards' not in s` — the name already appeared
+      // in a COMMENT higher up the file, so the guard saw it and did nothing.
+      // Checking for a substring when you mean a declaration is how an edit reports
+      // success and changes nothing.
+      add_user_rewards: {
+        Args: {
+          p_user_id: string
+          p_xp: number
+          p_credits: number
+        }
+        Returns: undefined
+      }
       award_proof: {
         Args: {
           p_user_id: string
