@@ -1,24 +1,27 @@
 {
+  "$comment": [
+    "2026-09-01. SINGLE-REPO TEST of extending the shared base.",
+    "The first attempt at this changed 51 repos at once and broke 16. The cause was not",
+    "the package \u2014 npm pack lists config/tsconfig.base.json plainly \u2014 but package-lock",
+    "pins on an SDK commit from before that file existed. Those pins are now current.",
+    "",
+    "So this is proven HERE before it goes anywhere else."
+  ],
+  "extends": "@craudioviz/platform-sdk/config/tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "downlevelIteration": true,
-    "target": "ES2020",
-    "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
