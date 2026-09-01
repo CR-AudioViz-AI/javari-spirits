@@ -9,7 +9,18 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+// 2026-09-01: `type`, not `interface`.
+//
+// An INTERFACE has no implicit index signature, so it cannot satisfy supabase-js's
+// GenericSchema constraint — which is a mapped type. The client silently degrades
+// and EVERY table resolves to `never`, which is why the errors read 'values: never'
+// and 'user_id does not exist in type never[]' rather than naming anything.
+//
+// A `type` alias gets that index signature implicitly. This is the only difference,
+// and it is the fourth thing I tried on this file: the tables were real, the
+// generated types were correct, and CompositeTypes was genuinely missing — none of
+// which was the cause.
+export type Database = {
   public: {
     Tables: {
       // 2026-09-01: hidden_cards, user_digital_cards and discovery_events added,
