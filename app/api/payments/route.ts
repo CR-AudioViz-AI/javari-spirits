@@ -152,7 +152,11 @@ export async function POST(request: NextRequest) {
       // CREATE CHECKOUT SESSION
       // ==========================================
       case 'create-checkout': {
-        const plan = PLANS[planId as keyof typeof PLANS];
+        // 2026-09-01: typed so stripe_price_id is visible. PLANS is inferred from
+        // an object literal where not every entry carries the field, so TypeScript
+        // narrows the union to the entries that lack it — and the guard below reads
+        // as a property that does not exist rather than as a missing price.
+        const plan = PLANS[planId as keyof typeof PLANS] as { id: string; stripe_price_id?: string } | undefined;
         if (!plan || !plan.stripe_price_id) {
           return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
         }
