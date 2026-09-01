@@ -211,6 +211,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       bv_spirits: {
         Row: {
@@ -309,6 +310,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       bv_user_collection: {
         Row: {
@@ -368,6 +370,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       bv_trivia_questions: {
         Row: {
@@ -421,6 +424,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       bv_trivia_progress: {
         Row: {
@@ -450,6 +454,7 @@ export type Database = {
           proof_earned?: number
           answered_at?: string
         }
+        Relationships: []
       }
       bv_game_sessions: {
         Row: {
@@ -494,6 +499,7 @@ export type Database = {
           started_at?: string
           completed_at?: string | null
         }
+        Relationships: []
       }
       bv_rewards: {
         Row: {
@@ -541,6 +547,7 @@ export type Database = {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       bv_proof_transactions: {
         Row: {
@@ -576,6 +583,7 @@ export type Database = {
           balance_after?: number
           created_at?: string
         }
+        Relationships: []
       }
       bv_courses: {
         Row: {
@@ -623,6 +631,7 @@ export type Database = {
           is_active?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       bv_leaderboards: {
         Row: {
@@ -667,6 +676,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
@@ -682,6 +692,7 @@ export type Database = {
           p_reference_id?: string
         }
         Returns: number
+        Relationships: []
       }
       get_random_trivia: {
         Args: {
@@ -691,13 +702,14 @@ export type Database = {
           p_exclude_ids?: string[]
         }
         Returns: Database['public']['Tables']['bv_trivia_questions']['Row'][]
+        Relationships: []
       }
     }
     Enums: {
       [_ in never]: never
     }
-    // 2026-09-01: CompositeTypes was MISSING, and its absence is why every insert
-    // in this repo failed to typecheck.
+    // 2026-09-01: CompositeTypes was genuinely missing and is required — but it was
+    // NOT the cause of the insert failures. See the Relationships note above.
     //
     // supabase-js checks the schema type against its GenericSchema constraint, which
     // requires Tables, Views, Functions, Enums AND CompositeTypes. Miss one and the
