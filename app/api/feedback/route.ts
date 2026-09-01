@@ -20,7 +20,10 @@ export async function POST(request: NextRequest) {
     const { type, message, context, url } = body;
 
     // Get user from session if available
-    const cookieStore = cookies();
+    // 2026-09-01, Next 15: cookies() is ASYNC. Synchronous use compiles under the old
+    // types and fails at runtime — which is why a green build was never accepted as
+    // evidence during this upgrade.
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('sb-kteobfyferrukqeolofj-auth-token');
     let userId = null;
 
