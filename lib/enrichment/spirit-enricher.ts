@@ -110,7 +110,10 @@ async function fetchFromOpenFoodFacts(query: string, category: string = 'spirits
         // explicit null OVERWRITES it. For proof and volume_ml that is the difference
         // between "not known yet" and "known to be nothing".
         proof: abv ? abv * 2 : undefined,
-        volume_ml: product.quantity ? parseVolume(product.quantity) : undefined,
+        // parseVolume can itself return null, so `?? undefined` collapses both the
+        // 'no quantity string' and 'unparseable quantity' cases to the same omitted
+        // field rather than writing an explicit null over a column default.
+        volume_ml: (product.quantity ? parseVolume(product.quantity) : undefined) ?? undefined,
         country: product.countries_tags?.[0]?.replace('en:', ''),
         barcode: product.code,
         source: 'open_food_facts',
@@ -164,7 +167,7 @@ async function fetchFromCocktailDB(ingredientType: string): Promise<SpiritData[]
             name: info.strIngredient,
             category: info.strType || mapCocktailDBCategory(info.strIngredient),
             description: info.strDescription,
-            abv: info.strABV ? parseFloat(info.strABV) : null,
+            abv: info.strABV ? parseFloat(info.strABV) : undefined,
             source: 'cocktaildb',
             source_id: info.idIngredient,
           });
