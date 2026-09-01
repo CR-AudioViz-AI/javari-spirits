@@ -685,6 +685,21 @@ export interface Database {
     Enums: {
       [_ in never]: never
     }
+    // 2026-09-01: CompositeTypes was MISSING, and its absence is why every insert
+    // in this repo failed to typecheck.
+    //
+    // supabase-js checks the schema type against its GenericSchema constraint, which
+    // requires Tables, Views, Functions, Enums AND CompositeTypes. Miss one and the
+    // whole schema fails the constraint, the client silently degrades, and every
+    // table resolves to `never` — which is why the errors read 'values: never' and
+    // 'user_id does not exist in type never[]' rather than naming a missing table.
+    //
+    // I read those as the three new tables being absent and regenerated them. They
+    // were already correct. The real fault was one missing key affecting ALL twelve
+    // tables, and it has been in this file since it was written.
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
 
