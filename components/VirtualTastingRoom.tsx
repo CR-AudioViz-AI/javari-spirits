@@ -179,7 +179,13 @@ export default function VirtualTastingRoom() {
                       key={flavor}
                       onClick={() => toggleFlavor(category as 'odor' | 'palate' | 'finish', flavor)}
                       className={`px-2 py-1 text-xs rounded ${
-                        tastingNotes[category as keyof TastingNote]?.includes?.(flavor)
+                        // 2026-09-01: Array.isArray narrows before .includes. The indexed value is
+                        // 'string | null | string[]', and string has .includes while null
+                        // does not — the optional-call `?.includes?.()` hid that from the
+                        // reader without satisfying the checker.
+                        (Array.isArray(tastingNotes[category as keyof TastingNote])
+                          ? (tastingNotes[category as keyof TastingNote] as string[]).includes(flavor)
+                          : false)
                           ? 'bg-amber-500 text-white'
                           : 'bg-gray-800 text-gray-400'
                       }`}
