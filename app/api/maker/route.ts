@@ -386,7 +386,7 @@ async function getDistilleryStats(distilleryId: string) {
   
   const reviewCount = reviews?.length || 0;
   const avgRating = reviewCount > 0
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+    ? (reviews ?? []).reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / reviewCount
     : 0;
   
   // Get view count (last 30 days)
