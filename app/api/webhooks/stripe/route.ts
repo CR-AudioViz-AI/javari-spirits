@@ -21,7 +21,13 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = headers().get('stripe-signature')!;
+  // 2026-09-01, Next 15: headers() is ASYNC.
+  //
+  // This is the STRIPE WEBHOOK signature. Read off a Promise it is undefined, so the
+  // signature check fails or is skipped and payment events are lost or accepted
+  // unverified. Of the two async-API sites missed in this repo, this is the one that
+  // touches money.
+  const signature = (await headers()).get('stripe-signature')!;
 
   let event: Stripe.Event;
 
