@@ -101,9 +101,16 @@ async function fetchFromOpenFoodFacts(query: string, category: string = 'spirits
         category: mapOpenFoodFactsCategory(product.categories_tags || []),
         description: product.generic_name || product.generic_name_en,
         image_url: product.image_url || product.image_front_url,
-        abv: abv,
-        proof: abv ? abv * 2 : null,
-        volume_ml: product.quantity ? parseVolume(product.quantity) : null,
+        abv: abv ?? undefined,
+        // 2026-09-01: undefined, not null.
+        //
+        // The target type is `number | undefined` and these produced `number | null`.
+        // The distinction is not pedantry here: an OPTIONAL field left undefined is
+        // omitted from a Supabase insert and the column keeps its default, whereas an
+        // explicit null OVERWRITES it. For proof and volume_ml that is the difference
+        // between "not known yet" and "known to be nothing".
+        proof: abv ? abv * 2 : undefined,
+        volume_ml: product.quantity ? parseVolume(product.quantity) : undefined,
         country: product.countries_tags?.[0]?.replace('en:', ''),
         barcode: product.code,
         source: 'open_food_facts',
