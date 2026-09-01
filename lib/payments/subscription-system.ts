@@ -557,7 +557,10 @@ export async function trackAffiliateClick(
 // ============================================
 
 export {
-  stripe,
+  // 2026-09-01: `stripe` was removed when the client became lazy, and this export
+  // still named it. My own refactor left the dangling reference — I rewrote the
+  // construction and did not re-read the file's export block.
+  getStripe,
   supabase,
 };
 
