@@ -172,9 +172,9 @@ export default function Footer() {
               <Link href="/terms" className="text-gray-500 hover:text-amber-500 transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/contact" className="text-gray-500 hover:text-amber-500 transition-colors">
+              <a href="https://craudiovizai.com/contact" className="text-gray-500 hover:text-amber-500 transition-colors">
                 Contact Us
-              </Link>
+              </a>
               <Link href="/maker/dashboard" className="text-gray-500 hover:text-amber-500 transition-colors">
                 For Makers
               </Link>
