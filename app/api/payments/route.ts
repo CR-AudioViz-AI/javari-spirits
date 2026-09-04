@@ -18,6 +18,20 @@ const supabase = lazyAdminDb();
 // SUBSCRIPTION PLANS
 // ============================================
 
+// 2026-09-04: placeholder Stripe price ids removed.
+//
+// Each of these read `process.env.STRIPE_X_PRICE_ID || 'price_enthusiast'` and
+// none of those variables is set on this project. A checkout therefore sent
+// Stripe a price id that does not exist, and the customer saw a failure with no
+// explanation of what was wrong.
+//
+// A fake id is worse than an absent one: the route's own guard already refuses
+// when stripe_price_id is undefined, and the fallback was defeating it. Removing
+// the fallback lets that guard do its job.
+//
+// This app needs a working buy path. Setting the four STRIPE_*_PRICE_ID variables
+// on the Vercel project is what closes it - the code is now honest about them
+// being missing.
 const PLANS = {
   free: {
     id: 'free',
@@ -44,7 +58,7 @@ const PLANS = {
     description: 'For passionate spirit lovers',
     price: 9.99,
     interval: 'month',
-    stripe_price_id: process.env.STRIPE_ENTHUSIAST_PRICE_ID || 'price_enthusiast',
+    stripe_price_id: process.env.STRIPE_ENTHUSIAST_PRICE_ID,
     features: [
       'Unlimited collection items',
       'Advanced search & filters',
@@ -67,7 +81,7 @@ const PLANS = {
     description: 'The ultimate spirit experience',
     price: 24.99,
     interval: 'month',
-    stripe_price_id: process.env.STRIPE_CONNOISSEUR_PRICE_ID || 'price_connoisseur',
+    stripe_price_id: process.env.STRIPE_CONNOISSEUR_PRICE_ID,
     features: [
       'Everything in Enthusiast',
       'Unlimited AI requests',
@@ -90,7 +104,7 @@ const PLANS = {
     description: 'Save 20% with annual billing',
     price: 95.88, // $7.99/month
     interval: 'year',
-    stripe_price_id: process.env.STRIPE_ENTHUSIAST_ANNUAL_ID || 'price_enthusiast_annual',
+    stripe_price_id: process.env.STRIPE_ENTHUSIAST_ANNUAL_ID,
     features: ['All Enthusiast features', '2 months free'],
     limits: { collections: -1, scans: -1, ai_requests: 50 },
   },
@@ -100,7 +114,7 @@ const PLANS = {
     description: 'Save 20% with annual billing',
     price: 239.88, // $19.99/month
     interval: 'year',
-    stripe_price_id: process.env.STRIPE_CONNOISSEUR_ANNUAL_ID || 'price_connoisseur_annual',
+    stripe_price_id: process.env.STRIPE_CONNOISSEUR_ANNUAL_ID,
     features: ['All Connoisseur features', '2 months free'],
     limits: { collections: -1, scans: -1, ai_requests: -1 },
   },

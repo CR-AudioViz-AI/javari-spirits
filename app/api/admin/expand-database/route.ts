@@ -15,13 +15,24 @@ function getSupabase() {
   return adminDb();
 }
 
-const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'javari-admin-2024';
+// 2026-09-04: the fallback secret is gone. This read
+// `process.env.ADMIN_API_KEY || 'javari-admin-2024'`, so anyone who knew that
+// string had admin access to this route. It is in a public git history, which
+// means it stopped being a secret the day it was written.
+//
+// `env or literal` is what makes a placeholder permanent: every caller keeps
+// working, so the literal is never needed and never removed. Four platform tools
+// carried the same pattern and were fixed earlier today.
+//
+// Reading it as undefined is deliberate - each handler must refuse when it is
+// unset rather than fall through to a value anybody can read on GitHub.
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 
 function validateAdminKey(request: NextRequest): boolean {
   const apiKey = request.headers.get('X-Admin-Key') || 
                  request.headers.get('x-admin-key') ||
                  request.nextUrl.searchParams.get('key');
-  return apiKey === ADMIN_API_KEY;
+  return (Boolean(ADMIN_API_KEY) && apiKey === ADMIN_API_KEY);
 }
 
 // Alcohol categories for Open Food Facts search

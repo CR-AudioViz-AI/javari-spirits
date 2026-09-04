@@ -134,9 +134,30 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, category, limit = 50, api_key } = body;
     
-    // Simple API key check for cron jobs
-    const expectedKey = process.env.ENRICHMENT_API_KEY || 'javari-enrich-2025';
-    if (api_key !== expectedKey) {
+    // 2026-09-04: the fallback secret is gone.
+    //
+    // This read `process.env.ENRICHMENT_API_KEY || 'javari-enrich-2025'`, so
+    // anyone who knew or guessed that string could run enrichment against the
+    // whole catalogue. It is in a public git history, which means it is not a
+    // secret and has not been one since it was written.
+    //
+    // `env or literal` is what makes a placeholder permanent: every caller keeps
+    // working, so the literal is never needed and never removed. The same pattern
+    // was found and removed from four platform tools earlier today.
+    //
+    // Now it fails closed. An unconfigured endpoint refusing every request is a
+    // loud, fixable problem; one that quietly accepts a known string is not.
+    const expectedKey = process.env.ENRICHMENT_API_KEY;
+    if (!expectedKey) {
+      return NextResponse.json(
+        {
+          error: 'This endpoint is not configured. Set ENRICHMENT_API_KEY.',
+          code: 'NOT_CONFIGURED',
+        },
+        { status: 503 },
+      );
+    }
+    if (typeof api_key !== 'string' || api_key !== expectedKey) {
       return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
     
