@@ -383,6 +383,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
+/**
+ * 2026-09-04: attribution comes from the session, never from the request.
+ *
+ * added_by was set to body.user_id against a service-role client, so anybody
+ * could submit a speakeasy attributed to any user id they chose. That is not data
+ * theft, but it is forgery: a fabricated venue appears in another person's
+ * submission history and their reputation carries it.
+ *
+ * Anonymous submissions are still allowed - this is a community feature and
+ * requiring an account would kill it. What changed is that an UNAUTHENTICATED
+ * submission is now recorded as anonymous rather than as somebody else.
+ */
+async function submitterId(request: NextRequest): Promise<string | null> {
+  const header = request.headers.get('authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : null;
+  if (!token) return null;
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user) return null;
+    return data.user.id;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -417,7 +443,8 @@ export async function POST(request: NextRequest) {
         website_url: body.website_url,
         phone: body.phone,
         verified: false,  // User submissions start unverified
-        added_by: body.user_id
+        // Verified identity, or null. Never a value the caller supplied.
+        added_by: await submitterId(request)
       })
       .select()
       .single();
