@@ -1,5 +1,6 @@
 // app/api/ai/sommelier/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 import { ai } from '@/lib/platform';
 
@@ -32,7 +33,11 @@ Guidelines:
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, sessionId, userId, context } = await request.json();
+    // user id deliberately not taken from the body.
+    const {message, sessionId,  context} = await request.json();
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });

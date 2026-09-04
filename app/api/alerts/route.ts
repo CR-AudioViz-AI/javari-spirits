@@ -1,12 +1,16 @@
 // app/api/alerts/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
 // GET - List user's price alerts
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;
 
   if (!userId) {
     return NextResponse.json({ error: 'User ID required' }, { status: 400 });
@@ -32,7 +36,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new price alert
 export async function POST(request: NextRequest) {
   try {
-    const { userId, spiritId, targetPrice, alertType } = await request.json();
+    // user id deliberately not taken from the body.
+    const {spiritId, targetPrice, alertType} = await request.json();
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!userId || !spiritId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -94,7 +102,10 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const alertId = searchParams.get('id');
-  const userId = searchParams.get('userId');
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;
 
   if (!alertId || !userId) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

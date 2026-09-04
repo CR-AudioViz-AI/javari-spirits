@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -126,15 +127,16 @@ export async function POST(
   try {
     const spiritId = params.id;
     const body = await request.json();
-    const {
-      user_id,
-      rating,
+    // user id deliberately not taken from the body.
+    const {rating,
       nose_notes,
       palate_notes,
       finish_notes,
       content,
-      would_buy_again,
-    } = body;
+      would_buy_again} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const user_id = _c.userId;
     
     // Validate required fields
     if (!user_id || !rating) {

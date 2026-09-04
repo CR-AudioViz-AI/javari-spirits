@@ -3,6 +3,7 @@
 // Free APIs: OpenStreetMap Nominatim, Overpass API
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -126,7 +127,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, type, lat, lon, address, phone, website, userId } = body;
+    // user id deliberately not taken from the body.
+    const {name, type, lat, lon, address, phone, website} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!name || !lat || !lon) {
       return NextResponse.json({ error: "Name and coordinates required" }, { status: 400 });

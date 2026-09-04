@@ -2,6 +2,7 @@
 // PRICE TRACKING AND MARKET DATA AGGREGATION
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -112,7 +113,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { spiritId, price, store, location, userId } = body;
+    // user id deliberately not taken from the body.
+    const {spiritId, price, store, location} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!spiritId || !price) {
       return NextResponse.json({ error: "Spirit ID and price required" }, { status: 400 });

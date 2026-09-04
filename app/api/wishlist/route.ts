@@ -16,6 +16,7 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/supabase/admin';
+import { requireCaller } from '@/lib/api/caller';
 import { toCategorySlug } from '@/lib/collection/category'
 
 export const dynamic = 'force-dynamic'
@@ -26,8 +27,10 @@ function db() {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const userId = request.nextUrl.searchParams.get('userId')
-  if (!userId) return NextResponse.json({ error: 'userId is required' }, { status: 400 })
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;if (!userId) return NextResponse.json({ error: 'userId is required' }, { status: 400 })
   const { data, error } = await db()
     .from('collector_wishlists')
     .select('*')
@@ -122,8 +125,10 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const id = request.nextUrl.searchParams.get('id')
-  const userId = request.nextUrl.searchParams.get('userId')
-  if (!id || !userId) return NextResponse.json({ error: 'id and userId are required' }, { status: 400 })
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;if (!id || !userId) return NextResponse.json({ error: 'id and userId are required' }, { status: 400 })
   const { error } = await db().from('collector_wishlists').delete().eq('id', id).eq('user_id', userId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true, message: 'Removed.' })

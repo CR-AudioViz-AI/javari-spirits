@@ -1,6 +1,7 @@
 // app/api/distilleries/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { requireCaller } from '@/lib/api/caller';
 const supabase = lazyAdminDb()
 
 export async function GET(request: NextRequest) {
@@ -57,9 +58,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, distilleryId, visitDate, notes, rating } = body
+    // user id deliberately not taken from the body.
+    const { distilleryId, visitDate, notes, rating } = body
+    const _c = await requireCaller(request)
+    if (!_c.ok) return _c.res
+    const userId = _c.userId
 
-    if (!userId || !distilleryId) {
+    if (!distilleryId) {
       return NextResponse.json({ error: 'User ID and Distillery ID required' }, { status: 400 })
     }
 

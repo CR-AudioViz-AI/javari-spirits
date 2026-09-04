@@ -1,11 +1,15 @@
 // app/api/feed/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;
   const type = searchParams.get('type') || 'following'; // 'following', 'global', 'user'
   const targetUserId = searchParams.get('targetUserId');
   const limit = parseInt(searchParams.get('limit') || '20');
@@ -55,7 +59,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new activity
 export async function POST(request: NextRequest) {
   try {
-    const { userId, activityType, spiritId, cocktailId, distilleryId, content, metadata, isPublic } = await request.json();
+    // user id deliberately not taken from the body.
+    const {activityType, spiritId, cocktailId, distilleryId, content, metadata, isPublic} = await request.json();
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!userId || !activityType) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

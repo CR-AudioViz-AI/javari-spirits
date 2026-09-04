@@ -16,6 +16,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { callerId } from '@/lib/api/caller';
+import { requireCaller } from '@/lib/api/caller';
 // Define types
 interface TicketStats {
   status: string;
@@ -92,7 +94,14 @@ export async function POST(request: NextRequest) {
       status: 'open',
       auto_generated: true,
       error_details: body.error_details || null,
-      user_id: body.user_id || null
+      // 2026-09-04: attribution from the verified token, or null.
+        //
+        // This read the id straight from the request, so a ticket could be filed
+        // in anybody's name against a service-role client. Anonymous tickets are
+        // deliberately still allowed - somebody locked out of their account
+        // cannot authenticate to report it - but an unauthenticated ticket is now
+        // recorded as anonymous rather than as somebody else.
+        user_id: await callerId(request)
     }
 
     const { data, error } = await supabase

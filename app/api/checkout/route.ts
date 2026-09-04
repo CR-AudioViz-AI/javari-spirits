@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import Stripe from 'stripe';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 // 2026-08-31: LAZY, not module scope. A Stripe client constructed here runs
@@ -35,7 +36,11 @@ const PRICE_IDS: Record<string, string> = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tierId, userId } = body;
+    // user id deliberately not taken from the body.
+    const {tierId} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     // Validate tier
     if (!PRICE_IDS[tierId]) {

@@ -16,6 +16,7 @@
 // CR AudioViz AI, LLC · EIN 39-3646201 · August 2026
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/supabase/admin';
+import { requireCaller } from '@/lib/api/caller';
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -24,8 +25,10 @@ function db() {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const mine = request.nextUrl.searchParams.get('userId')
-  const q = request.nextUrl.searchParams.get('q')
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const mine = _c.userId;const q = request.nextUrl.searchParams.get('q')
   const supa = db()
 
   let query = supa.from('bottle_trades').select('*').order('created_at', { ascending: false }).limit(60)

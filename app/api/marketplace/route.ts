@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -221,7 +222,11 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, listing_id, user_id, ...data } = body;
+    // user id deliberately not taken from the body.
+    const {action, listing_id,  ...data} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const user_id = _c.userId;
 
     if (!listing_id) {
       return NextResponse.json({ error: 'Listing ID required' }, { status: 400 });
@@ -407,7 +412,10 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const listingId = searchParams.get('id');
-    const userId = searchParams.get('user_id');
+    // 2026-09-04: identity from the token, never the query string.
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!listingId || !userId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });

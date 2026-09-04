@@ -2,6 +2,8 @@
 // Auto-generates support tickets from client-side errors
 
 import { NextRequest, NextResponse } from 'next/server';
+import { callerId } from '@/lib/api/caller';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -46,7 +48,14 @@ export async function POST(request: NextRequest) {
     const { data: ticket, error } = await supabase
       .from('bv_support_tickets')
       .insert({
-        user_id: payload.user_id || null,
+        // 2026-09-04: attribution from the verified token, or null.
+        //
+        // This read the id straight from the request, so a ticket could be filed
+        // in anybody's name against a service-role client. Anonymous tickets are
+        // deliberately still allowed - somebody locked out of their account
+        // cannot authenticate to report it - but an unauthenticated ticket is now
+        // recorded as anonymous rather than as somebody else.
+        user_id: await callerId(request),
         email: payload.user_email || null,
         subject: `[Auto] ${payload.error_message.substring(0, 100)}`,
         description: `

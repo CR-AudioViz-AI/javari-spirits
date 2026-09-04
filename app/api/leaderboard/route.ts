@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,10 @@ const supabase = lazyAdminDb();
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    // 2026-09-04: identity from the token, never the query string.
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
     const period = searchParams.get('period') || 'all-time';
     const category = searchParams.get('category') || 'overall';
     const limit = parseInt(searchParams.get('limit') || '50');

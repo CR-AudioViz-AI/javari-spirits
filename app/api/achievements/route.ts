@@ -1,5 +1,6 @@
 // app/api/achievements/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -42,7 +43,10 @@ const ACHIEVEMENTS = [
 // GET - List all achievements and user progress
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
+  // 2026-09-04: identity from the token, never the query string.
+  const _c = await requireCaller(request);
+  if (!_c.ok) return _c.res;
+  const userId = _c.userId;
 
   // Get all achievements
   const { data: achievements, error: achError } = await supabase
@@ -95,7 +99,11 @@ export async function GET(request: NextRequest) {
 // POST - Check and update achievements for a user
 export async function POST(request: NextRequest) {
   try {
-    const { userId, action, data } = await request.json();
+    // user id deliberately not taken from the body.
+    const {action, data} = await request.json();
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });

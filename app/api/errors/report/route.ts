@@ -9,13 +9,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { error, errorInfo, context, userId } = body;
+    // user id deliberately not taken from the body.
+    const {error, errorInfo, context} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     // Check for duplicate errors (same message in last hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();

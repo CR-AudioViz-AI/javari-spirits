@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import OpenAI from 'openai';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 // 2026-08-31: LAZY, not module scope. A OpenAI client constructed here runs
@@ -63,7 +64,11 @@ Context about BarrelVerse:
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, context, userId, history } = body;
+    // user id deliberately not taken from the body.
+    const {message, context,  history} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     // Build conversation history
     const messages: any[] = [

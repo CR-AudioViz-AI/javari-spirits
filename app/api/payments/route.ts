@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 export const dynamic = 'force-dynamic';
 
@@ -143,7 +144,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, userId, planId, successUrl, cancelUrl } = body;
+    // user id deliberately not taken from the body.
+    const {action,  planId, successUrl, cancelUrl} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     // Validate Stripe configuration
     const stripeKey = process.env.STRIPE_SECRET_KEY;

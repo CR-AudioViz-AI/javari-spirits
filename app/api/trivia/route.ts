@@ -1,4 +1,5 @@
 import { lazyAdminDb } from '@/lib/supabase/admin';
+import { requireCaller } from '@/lib/api/caller';
 import { NextRequest, NextResponse } from 'next/server';
 
 const supabase = lazyAdminDb();
@@ -47,7 +48,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, score, questionsAnswered, correctAnswers, maxStreak } = body;
+    // user id deliberately not taken from the body.
+    const {score, questionsAnswered, correctAnswers, maxStreak} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
 
     if (!userId) {
       return NextResponse.json(

@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCaller } from '@/lib/api/caller';
 import { lazyAdminDb } from '@/lib/supabase/admin';
 const supabase = lazyAdminDb();
 
@@ -21,7 +22,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    // 2026-09-04: identity from the token, never the query string.
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const userId = _c.userId;
     const spiritId = searchParams.get('spirit_id');
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
     const offset = parseInt(searchParams.get('offset') || '0');
@@ -87,9 +91,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      user_id,
-      spirit_id,
+    // user id deliberately not taken from the body.
+    const {spirit_id,
       spirit_name,
       notes,
       overall_rating,
@@ -97,8 +100,10 @@ export async function POST(request: NextRequest) {
       personal_notes,
       price_paid,
       location,
-      companions,
-    } = body;
+      companions} = body;
+    const _c = await requireCaller(request);
+    if (!_c.ok) return _c.res;
+    const user_id = _c.userId;
     
     // Validate required fields
     if (!spirit_name || !notes || overall_rating === undefined) {
