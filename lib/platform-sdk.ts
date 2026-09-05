@@ -1,3 +1,12 @@
+// 2026-09-04: dead OpenRouter model replaced in 2 places.
+//
+// deepseek/deepseek-v4-flash:free is no longer served. My own sweep missed this
+// file because it looked only at app/api and the top level of lib - the guard
+// found it because the guard walks everything and asks the provider rather than
+// checking a list I wrote.
+//
+// OpenRouter's free tier churns, so this name will die too. The durable answer is
+// the platform's own free order, Groq then Gemini, which has been stable.
 // lib/platform-sdk.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // Javari Platform SDK — Standard integration for ALL apps
@@ -285,7 +294,7 @@ export const ai = {
       tasks: [{
         id: 'task-1', role: 'builder', objective: params.objective,
         inputs: [], outputs: ['result'], dependencies: [],
-        model: 'deepseek/deepseek-v4-flash:free',
+        model: 'nvidia/nemotron-3.5-lightning:free',
         max_cost: 0, status: 'pending',
       }],
     }
