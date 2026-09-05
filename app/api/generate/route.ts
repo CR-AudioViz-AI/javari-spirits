@@ -1,6 +1,6 @@
 // 2026-09-04: dead OpenRouter model replaced, and a note on why this recurs.
 //
-// deepseek/deepseek-v4-flash:free is no longer served. A request naming it
+// nvidia/nemotron-3.5-lightning:free is no longer served. A request naming it
 // returns an error and this call site treats a failed completion as an empty
 // answer, so the feature degraded silently rather than failing loudly.
 //
