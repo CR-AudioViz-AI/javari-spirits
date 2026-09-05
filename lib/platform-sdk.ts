@@ -1,6 +1,6 @@
 // 2026-09-04: dead OpenRouter model replaced in 2 places.
 //
-// deepseek/deepseek-v4-flash:free is no longer served. My own sweep missed this
+// nvidia/nemotron-3.5-lightning:free is no longer served. My own sweep missed this
 // file because it looked only at app/api and the top level of lib - the guard
 // found it because the guard walks everything and asks the provider rather than
 // checking a list I wrote.
