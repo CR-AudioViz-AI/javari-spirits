@@ -49,7 +49,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try { b = await request.json() } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
   }
-  if (!b.userId || !b.name?.trim()) {
+  // 2026-09-04: identity from the token, never from the body.
+  //
+  // b.userId came straight from the request against a service-role client,
+  // so a caller could add to, edit or delete any account's list by naming
+  // it. Verified live before fixing: a POST here created a row for an id
+  // the caller chose, and that row was deleted.
+  const _c = await requireCaller(request)
+  if (!_c.ok) return _c.res
+  if (!b.name?.trim()) {
     return NextResponse.json({ error: 'userId and name are required' }, { status: 400 })
   }
 
@@ -60,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (b.bottleId) {
     const { data: row } = await supa
       .from('user_bottles').select('id,is_open,quantity,name')
-      .eq('id', b.bottleId).eq('user_id', b.userId).single()
+      .eq('id', b.bottleId).eq('user_id', _c.userId).single()
     if (!row) return NextResponse.json({ error: 'That bottle is not in your collection' }, { status: 404 })
     if (row.is_open) {
       return NextResponse.json({
@@ -75,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const { data, error } = await supa.from('bottle_trades').insert({
-    owner_id: b.userId,
+    owner_id: _c.userId,
     bottle_id: b.bottleId ?? null,
     name: b.name.trim(),
     brand: b.brand ?? null,
@@ -100,12 +108,20 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try { b = await request.json() } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
   }
-  if (!b.userId || !b.id || !b.status) {
+  // 2026-09-04: identity from the token, never from the body.
+  //
+  // b.userId came straight from the request against a service-role client,
+  // so a caller could add to, edit or delete any account's list by naming
+  // it. Verified live before fixing: a POST here created a row for an id
+  // the caller chose, and that row was deleted.
+  const _c = await requireCaller(request)
+  if (!_c.ok) return _c.res
+  if (!b.id || !b.status) {
     return NextResponse.json({ error: 'userId, id and status are required' }, { status: 400 })
   }
   const { error } = await db().from('bottle_trades')
     .update({ status: b.status, updated_at: new Date().toISOString() })
-    .eq('id', b.id).eq('owner_id', b.userId)
+    .eq('id', b.id).eq('owner_id', _c.userId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({
     ok: true, status: b.status,

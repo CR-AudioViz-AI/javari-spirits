@@ -62,11 +62,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try { b = await request.json() } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
   }
-  if (!b.userId || !b.name?.trim()) {
+  // 2026-09-04: identity from the token, never from the body.
+  //
+  // b.userId came straight from the request against a service-role client,
+  // so a caller could add to, edit or delete any account's list by naming
+  // it. Verified live before fixing: a POST here created a row for an id
+  // the caller chose, and that row was deleted.
+  const _c = await requireCaller(request)
+  if (!_c.ok) return _c.res
+  if (!b.name?.trim()) {
     return NextResponse.json({ error: 'userId and name are required' }, { status: 400 })
   }
   const { data, error } = await db().from('collector_wishlists').insert({
-    user_id: b.userId,
+    user_id: _c.userId,
     domain: 'spirits',
     name: b.name.trim(),
     brand: b.brand ?? null,
@@ -87,12 +95,20 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try { b = await request.json() } catch {
     return NextResponse.json({ error: 'Body must be JSON' }, { status: 400 })
   }
-  if (!b.userId || !b.id) {
+  // 2026-09-04: identity from the token, never from the body.
+  //
+  // b.userId came straight from the request against a service-role client,
+  // so a caller could add to, edit or delete any account's list by naming
+  // it. Verified live before fixing: a POST here created a row for an id
+  // the caller chose, and that row was deleted.
+  const _c = await requireCaller(request)
+  if (!_c.ok) return _c.res
+  if (!b.id) {
     return NextResponse.json({ error: 'userId and id are required' }, { status: 400 })
   }
   const supa = db()
   const { data: row } = await supa
-    .from('collector_wishlists').select('*').eq('id', b.id).eq('user_id', b.userId).single()
+    .from('collector_wishlists').select('*').eq('id', b.id).eq('user_id', _c.userId).single()
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const acquired = b.acquired !== false
@@ -105,7 +121,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   let shelved = false
   if (acquired && b.addToShelf !== false) {
     const { error } = await supa.from('user_bottles').insert({
-      user_id: b.userId,
+      user_id: _c.userId,
       name: row.name, brand: row.brand, category: toCategorySlug(row.category, row.name),
       photo_url: row.image_url,
       quantity: 1, is_open: false, fill_level: null, status: 'sealed',
