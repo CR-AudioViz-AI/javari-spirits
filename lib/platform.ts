@@ -174,7 +174,7 @@ export const ai = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OR}`, 'HTTP-Referer': PLATFORM },
           body: JSON.stringify({
-            model: 'deepseek/deepseek-v4-flash:free', max_tokens: 2048, temperature: 0.7,
+            model: 'nvidia/nemotron-3.5-lightning:free', max_tokens: 2048, temperature: 0.7,
             messages: [...(system ? [{ role: 'system', content: system }] : []), { role: 'user', content: prompt }],
           }),
         })
