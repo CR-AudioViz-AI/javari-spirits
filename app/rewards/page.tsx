@@ -36,15 +36,24 @@ interface UserStats {
   achievements_count: number;
 }
 
+// 2026-09-04: this shape now matches what bv_profiles actually has.
+//
+// It previously declared level, xp, achievements_count and streak_days. None of
+// those is a column - the schema speaks experience_level and total_proof_earned,
+// and has nothing for achievements or streaks. So the query returned 42703 and
+// this leaderboard rendered nothing, while the types said everything was fine.
+//
+// A type that describes a table which does not exist is worse than no type: it
+// makes wrong code compile.
 interface LeaderboardEntry {
   rank: number;
-  user_id: string;
+  id: string;
   username: string;
   avatar_url?: string;
-  level: number;
-  xp: number;
-  achievements_count: number;
-  streak_days: number;
+  experience_level: number;
+  total_proof_earned: number;
+  /** bv_profiles stores badges as an array; the count is its length. */
+  badges?: unknown[];
   is_current_user?: boolean;
 }
 
@@ -284,22 +293,28 @@ function LeaderboardRow({ entry, index }: { entry: LeaderboardEntry; index: numb
             {entry.username}
             {entry.is_current_user && <span className="ml-2 text-xs">(You)</span>}
           </p>
-          <p className="text-xs text-gray-500">Level {entry.level}</p>
+          <p className="text-xs text-gray-500">Level {entry.experience_level}</p>
         </div>
       </div>
       
       {/* Stats */}
       <div className="hidden sm:flex items-center gap-6">
         <div className="text-center">
-          <p className="text-sm font-semibold text-gray-900">{formatNumber(entry.xp)}</p>
+          <p className="text-sm font-semibold text-gray-900">{formatNumber(entry.total_proof_earned)}</p>
           <p className="text-xs text-gray-500">XP</p>
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-gray-900">{entry.achievements_count}</p>
+          {/* 2026-09-04: bv_profiles has no achievements_count. badges is the real
+              column, so the count comes from its length rather than from a field
+              that does not exist. */}
+          <p className="text-sm font-semibold text-gray-900">{Array.isArray(entry.badges) ? entry.badges.length : 0}</p>
           <p className="text-xs text-gray-500">Badges</p>
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-orange-500">🔥 {entry.streak_days}</p>
+          {/* 2026-09-04: no streak column exists in bv_profiles. Showing a dash is
+              honest; showing 0 would read as "no streak" when the truth is "not
+              tracked". */}
+          <p className="text-sm font-semibold text-orange-500">—</p>
           <p className="text-xs text-gray-500">Streak</p>
         </div>
       </div>
@@ -467,21 +482,37 @@ export default function RewardsPage() {
       // Fetch leaderboard
       const { data: leaderboardData } = await supabase
         .from('bv_profiles')
-        .select('id, username, avatar_url, xp, level, achievements_count, streak_days')
-        .order('xp', { ascending: false })
+        // 2026-09-04: selected four columns bv_profiles does not have.
+        //
+        // xp, level, achievements_count and streak_days do not exist. PostgREST
+        // answers 42703 for the WHOLE query, so this leaderboard has been
+        // returning nothing at all - not a partial result, nothing.
+        //
+        // The schema speaks a different vocabulary from the UI: proof rather than
+        // xp, experience_level rather than level. total_proof_earned and
+        // experience_level are the real equivalents. Nothing in the table
+        // corresponds to an achievement count or a streak, so those are dropped
+        // rather than mapped to something that merely looks close - a leaderboard
+        // ranking people by the wrong number is worse than one missing a column.
+        .select('id, username, avatar_url, total_proof_earned, experience_level, badges')
+        .order('total_proof_earned', { ascending: false })
         .limit(50);
       
       if (leaderboardData) {
         const { data: { user } } = await supabase.auth.getUser();
         setLeaderboard(leaderboardData.map((entry, idx) => ({
           rank: idx + 1,
-          user_id: entry.id,
+          id: entry.id,
           username: entry.username || `Spirit Lover #${idx + 1}`,
           avatar_url: entry.avatar_url,
-          level: entry.level || calculateLevel(entry.xp || 0).level,
-          xp: entry.xp || 0,
-          achievements_count: entry.achievements_count || 0,
-          streak_days: entry.streak_days || 0,
+          // 2026-09-04: mapped to columns bv_profiles actually has.
+          // experience_level and total_proof_earned are real; level and xp
+          // were not, and the calculateLevel fallback hid that by producing
+          // a plausible number from an undefined input.
+          experience_level: entry.experience_level ?? calculateLevel(entry.total_proof_earned || 0).level,
+          total_proof_earned: entry.total_proof_earned || 0,
+          badges: Array.isArray(entry.badges) ? entry.badges : [],
+
           is_current_user: user?.id === entry.id,
         })));
       }
@@ -730,7 +761,7 @@ export default function RewardsPage() {
               {/* Leaderboard List */}
               <div className="space-y-3">
                 {leaderboard.map((entry, index) => (
-                  <LeaderboardRow key={entry.user_id} entry={entry} index={index} />
+                  <LeaderboardRow key={entry.id} entry={entry} index={index} />
                 ))}
               </div>
               

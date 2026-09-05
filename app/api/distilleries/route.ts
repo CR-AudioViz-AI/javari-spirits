@@ -1,3 +1,13 @@
+// 2026-09-04: table names corrected against the live schema. These are renames
+// the code never caught up with - bv_user_profiles and bv_users are both
+// bv_profiles, bv_activity_log is bv_activities, bv_tickets is
+// bv_support_tickets. Each returned PostgREST 42P01 and failed the WHOLE
+// query, so every feature built on them returned nothing.
+//
+// Only verified renames were applied. bv_tasting_sessions and bv_user_favorites
+// look like renames and are NOT: their columns do not exist in any candidate
+// table, so they are unbuilt features and repointing them would swap a loud
+// failure for a silent wrong answer.
 // app/api/distilleries/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { lazyAdminDb } from '@/lib/supabase/admin';
@@ -97,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     // Award proof points
     await supabase
-      .from('bv_user_profiles')
+      .from('bv_profiles')
       .update({ 
         proof_points: supabase.rpc('increment_points', { amount: 25 })
       })

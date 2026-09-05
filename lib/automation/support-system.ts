@@ -1,3 +1,13 @@
+// 2026-09-04: table names corrected against the live schema. These are renames
+// the code never caught up with - bv_user_profiles and bv_users are both
+// bv_profiles, bv_activity_log is bv_activities, bv_tickets is
+// bv_support_tickets. Each returned PostgREST 42P01 and failed the WHOLE
+// query, so every feature built on them returned nothing.
+//
+// Only verified renames were applied. bv_tasting_sessions and bv_user_favorites
+// look like renames and are NOT: their columns do not exist in any candidate
+// table, so they are unbuilt features and repointing them would swap a loud
+// failure for a silent wrong answer.
 /**
  * BARRELVERSE AUTONOMOUS SUPPORT SYSTEM
  * ======================================
@@ -112,7 +122,7 @@ export async function createTicket(
   const assignedTo = type === 'auto_error' ? 'javari' : 'bot';
 
   const { data: ticket, error } = await supabase
-    .from('bv_tickets')
+    .from('bv_support_tickets')
     .insert({
       user_id: userId,
       type,
@@ -157,7 +167,7 @@ export async function updateTicket(
   updates: Partial<Ticket>
 ): Promise<Ticket> {
   const { data: ticket, error } = await supabase
-    .from('bv_tickets')
+    .from('bv_support_tickets')
     .update({
       ...updates,
       updated_at: new Date().toISOString()
@@ -227,7 +237,7 @@ export async function handleApplicationError(
 
   // Check if similar error already reported
   const { data: existingTicket } = await supabase
-    .from('bv_tickets')
+    .from('bv_support_tickets')
     .select('id')
     .eq('type', 'auto_error')
     .ilike('subject', `%${error.message.substring(0, 50)}%`)
@@ -567,7 +577,7 @@ export async function markArticleHelpful(articleId: string): Promise<void> {
 export async function generateKnowledgeFromTickets(): Promise<number> {
   // Get resolved tickets without knowledge articles
   const { data: tickets } = await supabase
-    .from('bv_tickets')
+    .from('bv_support_tickets')
     .select('*')
     .eq('status', 'resolved')
     .is('knowledge_article_id', null)
@@ -613,7 +623,7 @@ Return JSON:
 
         if (insertedArticle) {
           await supabase
-            .from('bv_tickets')
+            .from('bv_support_tickets')
             .update({ knowledge_article_id: insertedArticle.id })
             .eq('id', ticket.id);
           generated++;
@@ -660,7 +670,7 @@ async function notifyUser(userId: string, data: NotificationData): Promise<void>
 
   // Get user preferences for email
   const { data: user } = await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .select('email, notification_preferences')
     .eq('id', userId)
     .single();
@@ -736,7 +746,7 @@ export async function systemHealthCheck(): Promise<{
 
   // Check pending tickets
   const { count: pendingTickets } = await supabase
-    .from('bv_tickets')
+    .from('bv_support_tickets')
     .select('id', { count: 'exact' })
     .eq('status', 'open')
     .eq('priority', 'critical');

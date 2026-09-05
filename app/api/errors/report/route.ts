@@ -1,3 +1,13 @@
+// 2026-09-04: table names corrected against the live schema. These are renames
+// the code never caught up with - bv_user_profiles and bv_users are both
+// bv_profiles, bv_activity_log is bv_activities, bv_tickets is
+// bv_support_tickets. Each returned PostgREST 42P01 and failed the WHOLE
+// query, so every feature built on them returned nothing.
+//
+// Only verified renames were applied. bv_tasting_sessions and bv_user_favorites
+// look like renames and are NOT: their columns do not exist in any candidate
+// table, so they are unbuilt features and repointing them would swap a loud
+// failure for a silent wrong answer.
 /**
  * ERROR REPORTING API
  * ===================
@@ -25,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Check for duplicate errors (same message in last hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data: existingTicket } = await supabase
-      .from('bv_tickets')
+      .from('bv_support_tickets')
       .select('id, occurrence_count')
       .eq('type', 'auto_error')
       .ilike('subject', `%${error.message?.substring(0, 50) || 'Unknown'}%`)
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (existingTicket) {
       // Increment occurrence count
       await supabase
-        .from('bv_tickets')
+        .from('bv_support_tickets')
         .update({ 
           occurrence_count: (existingTicket.occurrence_count || 1) + 1,
           updated_at: new Date().toISOString()
@@ -51,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     // Create new ticket
     const { data: ticket, error: ticketError } = await supabase
-      .from('bv_tickets')
+      .from('bv_support_tickets')
       .insert({
         user_id: userId || null,
         type: 'auto_error',

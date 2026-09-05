@@ -1,3 +1,13 @@
+// 2026-09-04: table names corrected against the live schema. These are renames
+// the code never caught up with - bv_user_profiles and bv_users are both
+// bv_profiles, bv_activity_log is bv_activities, bv_tickets is
+// bv_support_tickets. Each returned PostgREST 42P01 and failed the WHOLE
+// query, so every feature built on them returned nothing.
+//
+// Only verified renames were applied. bv_tasting_sessions and bv_user_favorites
+// look like renames and are NOT: their columns do not exist in any candidate
+// table, so they are unbuilt features and repointing them would swap a loud
+// failure for a silent wrong answer.
 /**
  * STRIPE WEBHOOK HANDLER
  * =======================
@@ -80,7 +90,7 @@ export async function POST(request: NextRequest) {
         } else if (userId && planId) {
           // Handle subscription
           await supabase
-            .from('bv_user_profiles')
+            .from('bv_profiles')
             .update({
               subscription_plan: planId,
               subscription_status: 'active',
@@ -112,7 +122,7 @@ export async function POST(request: NextRequest) {
 
         if (userId) {
           await supabase
-            .from('bv_user_profiles')
+            .from('bv_profiles')
             .update({
               subscription_status: subscription.status,
               subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -134,7 +144,7 @@ export async function POST(request: NextRequest) {
 
         if (userId) {
           await supabase
-            .from('bv_user_profiles')
+            .from('bv_profiles')
             .update({
               subscription_plan: 'free',
               subscription_status: 'canceled',
@@ -159,7 +169,7 @@ export async function POST(request: NextRequest) {
         if (subscriptionId) {
           // Find user by subscription ID
           const { data: profile } = await supabase
-            .from('bv_user_profiles')
+            .from('bv_profiles')
             .select('user_id')
             .eq('stripe_subscription_id', subscriptionId)
             .single();
@@ -190,7 +200,7 @@ export async function POST(request: NextRequest) {
 
         if (subscriptionId) {
           const { data: profile } = await supabase
-            .from('bv_user_profiles')
+            .from('bv_profiles')
             .select('user_id, email')
             .eq('stripe_subscription_id', subscriptionId)
             .single();
@@ -198,7 +208,7 @@ export async function POST(request: NextRequest) {
           if (profile) {
             // Update status
             await supabase
-              .from('bv_user_profiles')
+              .from('bv_profiles')
               .update({
                 subscription_status: 'past_due',
                 updated_at: new Date().toISOString(),

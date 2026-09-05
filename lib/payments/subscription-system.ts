@@ -1,3 +1,13 @@
+// 2026-09-04: table names corrected against the live schema. These are renames
+// the code never caught up with - bv_user_profiles and bv_users are both
+// bv_profiles, bv_activity_log is bv_activities, bv_tickets is
+// bv_support_tickets. Each returned PostgREST 42P01 and failed the WHOLE
+// query, so every feature built on them returned nothing.
+//
+// Only verified renames were applied. bv_tasting_sessions and bv_user_favorites
+// look like renames and are NOT: their columns do not exist in any candidate
+// table, so they are unbuilt features and repointing them would swap a loud
+// failure for a silent wrong answer.
 /**
  * BARRELVERSE PREMIUM SUBSCRIPTION SYSTEM
  * =======================================
@@ -142,7 +152,7 @@ export const PRICING_TIERS = {
 export async function createStripeCustomer(userId: string, email: string, name?: string): Promise<string> {
   // Check if customer already exists
   const { data: existingUser } = await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .select('stripe_customer_id')
     .eq('id', userId)
     .single();
@@ -163,7 +173,7 @@ export async function createStripeCustomer(userId: string, email: string, name?:
 
   // Save to database
   await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .update({ stripe_customer_id: customer.id })
     .eq('id', userId);
 
@@ -231,7 +241,7 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
 
   // Update user subscription status
   await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .update({
       subscription_tier: tierId,
       subscription_status: subscription.status,
@@ -267,7 +277,7 @@ export async function handleSubscriptionCanceled(subscription: Stripe.Subscripti
   if (!userId) return;
 
   await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .update({
       subscription_tier: 'free',
       subscription_status: 'canceled',
@@ -331,7 +341,7 @@ export async function createMarketplacePayment(
 ): Promise<{ clientSecret: string; paymentIntentId: string }> {
   // Get buyer's customer ID
   const { data: buyer } = await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .select('stripe_customer_id, email')
     .eq('id', buyerId)
     .single();
@@ -345,7 +355,7 @@ export async function createMarketplacePayment(
 
   // Get seller's connected account (if they have one)
   const { data: seller } = await supabase
-    .from('bv_users')
+    .from('bv_profiles')
     .select('stripe_connect_id')
     .eq('id', sellerId)
     .single();
@@ -398,7 +408,7 @@ export async function processAuctionPayment(
 
     // Get winner's payment method
     const { data: winner } = await supabase
-      .from('bv_users')
+      .from('bv_profiles')
       .select('stripe_customer_id, default_payment_method')
       .eq('id', winnerId)
       .single();
