@@ -1,3 +1,13 @@
+// 2026-09-05: table names corrected against the live schema.
+//
+// These are bv_-prefixed names for tables that exist WITHOUT the prefix. Each
+// returned PostgREST 42P01 and failed the whole query, so every feature built
+// on them returned nothing rather than something partial.
+//
+// Only prefix-strips whose target has an id and a substantial column set were
+// applied. Eight other close-looking names were REJECTED: bv_distillery_views
+// is not bv_distilleries, bv_lessons is not cv_lessons, and repointing those
+// would swap a loud failure for a silent wrong answer.
 // app/api/webhooks/stripe/route.ts
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -85,14 +95,14 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   // Find user by stripe customer id
   const { data: existingSub } = await supabase
-    .from('bv_subscriptions')
+    .from('subscriptions')
     .select('user_id')
     .eq('stripe_customer_id', customerId)
     .single();
 
   if (existingSub) {
     await supabase
-      .from('bv_subscriptions')
+      .from('subscriptions')
       .update({
         stripe_subscription_id: subscription.id,
         plan,
@@ -110,7 +120,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   
   await supabase
-    .from('bv_subscriptions')
+    .from('subscriptions')
     .update({
       status: 'cancelled',
       plan: 'free',
@@ -124,7 +134,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
   
   const { data: sub } = await supabase
-    .from('bv_subscriptions')
+    .from('subscriptions')
     .select('user_id')
     .eq('stripe_customer_id', customerId)
     .single();
@@ -143,7 +153,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
   
   const { data: sub } = await supabase
-    .from('bv_subscriptions')
+    .from('subscriptions')
     .select('user_id')
     .eq('stripe_customer_id', customerId)
     .single();
@@ -157,7 +167,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     });
 
     await supabase
-      .from('bv_subscriptions')
+      .from('subscriptions')
       .update({ status: 'past_due' })
       .eq('stripe_customer_id', customerId);
   }

@@ -1,3 +1,13 @@
+// 2026-09-05: table names corrected against the live schema.
+//
+// These are bv_-prefixed names for tables that exist WITHOUT the prefix. Each
+// returned PostgREST 42P01 and failed the whole query, so every feature built
+// on them returned nothing rather than something partial.
+//
+// Only prefix-strips whose target has an id and a substantial column set were
+// applied. Eight other close-looking names were REJECTED: bv_distillery_views
+// is not bv_distilleries, bv_lessons is not cv_lessons, and repointing those
+// would swap a loud failure for a silent wrong answer.
 /**
  * BARRELVERSE AUTONOMOUS CONTENT ENGINE
  * ======================================
@@ -151,7 +161,7 @@ export async function expandSpiritsDatabase(): Promise<{ added: number; sources:
 
   // Log expansion
   await supabase
-    .from('bv_system_logs')
+    .from('system_logs')
     .insert({
       event: 'spirits_expansion',
       details: results,
@@ -535,7 +545,7 @@ export async function dailyContentRefresh(): Promise<{
 
   // Log the refresh
   await supabase
-    .from('bv_system_logs')
+    .from('system_logs')
     .insert({
       event: 'daily_content_refresh',
       details: results,
@@ -580,7 +590,7 @@ export async function weeklyContentGeneration(): Promise<{
   // 3. Add new game modes/challenges
 
   await supabase
-    .from('bv_system_logs')
+    .from('system_logs')
     .insert({
       event: 'weekly_content_generation',
       details: results,

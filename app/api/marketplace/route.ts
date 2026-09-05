@@ -266,20 +266,20 @@ export async function PATCH(request: NextRequest) {
         // Toggle save
         if (user_id) {
           const { data: existing } = await supabase
-            .from('bv_saved_listings')
+            .from('saved_listings')
             .select('id')
             .eq('user_id', user_id)
             .eq('listing_id', listing_id)
             .single();
 
           if (existing) {
-            await supabase.from('bv_saved_listings').delete().eq('id', existing.id);
+            await supabase.from('saved_listings').delete().eq('id', existing.id);
             await supabase
               .from('bv_marketplace_listings')
               .update({ saves: Math.max(0, listing.saves - 1) })
               .eq('id', listing_id);
           } else {
-            await supabase.from('bv_saved_listings').insert({ user_id, listing_id });
+            await supabase.from('saved_listings').insert({ user_id, listing_id });
             await supabase
               .from('bv_marketplace_listings')
               .update({ saves: listing.saves + 1 })

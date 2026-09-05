@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (type === 'feature') {
       // Feature request - goes to feature_requests table
       const { data, error } = await supabase
-        .from('bv_feature_requests')
+        .from('feature_requests')
         .insert({
           user_id: userId,
           title: message.substring(0, 100),

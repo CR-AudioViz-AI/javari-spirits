@@ -1,3 +1,13 @@
+// 2026-09-05: table names corrected against the live schema.
+//
+// These are bv_-prefixed names for tables that exist WITHOUT the prefix. Each
+// returned PostgREST 42P01 and failed the whole query, so every feature built
+// on them returned nothing rather than something partial.
+//
+// Only prefix-strips whose target has an id and a substantial column set were
+// applied. Eight other close-looking names were REJECTED: bv_distillery_views
+// is not bv_distilleries, bv_lessons is not cv_lessons, and repointing those
+// would swap a loud failure for a silent wrong answer.
 /**
  * EMAIL AUTOMATION API
  * ====================
@@ -322,7 +332,7 @@ export async function POST(request: NextRequest) {
           const result = await response.json();
           
           // Log to database
-          await supabase.from('bv_email_logs').insert({
+          await supabase.from('email_logs').insert({
             user_id: userId,
             email,
             template,
@@ -348,7 +358,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Demo mode - log only
-        await supabase.from('bv_email_logs').insert({
+        await supabase.from('email_logs').insert({
           user_id: userId,
           email,
           template,
@@ -393,7 +403,7 @@ export async function POST(request: NextRequest) {
         for (const seq of sequences) {
           const sendAt = new Date(Date.now() + seq.delay);
           
-          await supabase.from('bv_email_queue').insert({
+          await supabase.from('email_queue').insert({
             user_id: userId,
             email,
             template: seq.template,
@@ -443,7 +453,7 @@ export async function POST(request: NextRequest) {
       // ==========================================
       case 'process-queue': {
         const { data: pendingEmails } = await supabase
-          .from('bv_email_queue')
+          .from('email_queue')
           .select('*')
           .eq('status', 'pending')
           .lte('scheduled_for', new Date().toISOString())
@@ -473,7 +483,7 @@ export async function POST(request: NextRequest) {
           }
 
           await supabase
-            .from('bv_email_queue')
+            .from('email_queue')
             .update({ status: 'sent', sent_at: new Date().toISOString() })
             .eq('id', queuedEmail.id);
 

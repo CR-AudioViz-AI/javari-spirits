@@ -1,3 +1,13 @@
+// 2026-09-05: table names corrected against the live schema.
+//
+// These are bv_-prefixed names for tables that exist WITHOUT the prefix. Each
+// returned PostgREST 42P01 and failed the whole query, so every feature built
+// on them returned nothing rather than something partial.
+//
+// Only prefix-strips whose target has an id and a substantial column set were
+// applied. Eight other close-looking names were REJECTED: bv_distillery_views
+// is not bv_distilleries, bv_lessons is not cv_lessons, and repointing those
+// would swap a loud failure for a silent wrong answer.
 // app/api/subscriptions/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { requireCaller } from '@/lib/api/caller';
@@ -76,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     // Get or create Stripe customer
     const { data: existingSub } = await supabase
-      .from("bv_subscriptions")
+      .from("subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", userId)
       .single();
@@ -99,7 +109,7 @@ export async function POST(request: NextRequest) {
       customerId = customer.id;
 
       // Create subscription record
-      await supabase.from("bv_subscriptions").insert({
+      await supabase.from("subscriptions").insert({
         user_id: userId,
         stripe_customer_id: customerId,
         plan: "free",

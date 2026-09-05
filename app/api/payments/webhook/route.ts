@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
             .eq('user_id', userId);
 
           // Record transaction
-          await supabase.from('bv_transactions').insert({
+          await supabase.from('transactions').insert({
             user_id: userId,
             type: 'subscription',
             plan_id: planId,
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 
           if (profile) {
             // Record payment
-            await supabase.from('bv_transactions').insert({
+            await supabase.from('transactions').insert({
               user_id: profile.user_id,
               type: 'subscription_renewal',
               amount: invoice.amount_paid / 100,

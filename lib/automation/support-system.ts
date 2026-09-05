@@ -417,7 +417,7 @@ export async function submitFeatureRequest(
   category: string
 ): Promise<FeatureRequest> {
   const { data: request, error } = await supabase
-    .from('bv_feature_requests')
+    .from('feature_requests')
     .insert({
       user_id: userId,
       title,
@@ -477,7 +477,7 @@ export async function voteForFeature(
 
   // Increment vote count
   const { data: feature } = await supabase
-    .from('bv_feature_requests')
+    .from('feature_requests')
     .update({ votes: supabase.rpc('increment') })
     .eq('id', featureId)
     .select('votes')
@@ -486,7 +486,7 @@ export async function voteForFeature(
   // Check if hits threshold for auto-review
   if (feature?.votes >= 50) {
     await supabase
-      .from('bv_feature_requests')
+      .from('feature_requests')
       .update({ status: 'under_review' })
       .eq('id', featureId);
   }
@@ -519,7 +519,7 @@ Provide JSON:
     const analysis = JSON.parse(response.choices[0].message.content || '{}');
 
     await supabase
-      .from('bv_feature_requests')
+      .from('feature_requests')
       .update({ ai_analysis: analysis })
       .eq('id', request.id);
 
@@ -678,7 +678,7 @@ async function notifyUser(userId: string, data: NotificationData): Promise<void>
   if (user?.notification_preferences?.email_enabled) {
     // Queue email notification
     await supabase
-      .from('bv_email_queue')
+      .from('email_queue')
       .insert({
         to: user.email,
         template: 'notification',
@@ -703,7 +703,7 @@ async function sendPushNotification(
 ): Promise<void> {
   // Get user's push subscription
   const { data: subscription } = await supabase
-    .from('bv_push_subscriptions')
+    .from('push_subscriptions')
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -757,7 +757,7 @@ export async function systemHealthCheck(): Promise<{
 
   // Log health check
   await supabase
-    .from('bv_health_checks')
+    .from('health_checks')
     .insert({
       healthy: issues.length === 0,
       issues,
