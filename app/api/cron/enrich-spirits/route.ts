@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Log the cron run
-    await supabase.from('bv_cron_logs').insert({
+    await supabase.from('cron_logs').insert({
       job_name: 'enrich_spirits',
       status: 'completed',
       results,
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     results.errors.push(error.message);
     
-    await supabase.from('bv_cron_logs').insert({
+    await supabase.from('cron_logs').insert({
       job_name: 'enrich_spirits',
       status: 'error',
       results,
