@@ -261,7 +261,7 @@ export async function handleApplicationError(
 
   // Log the error
   await supabase
-    .from('bv_error_log')
+    .from('error_log')
     .insert({
       ticket_id: ticket.id,
       error_type: error.name,
@@ -736,7 +736,7 @@ export async function systemHealthCheck(): Promise<{
 
   // Check for error spikes
   const { count: errorCount } = await supabase
-    .from('bv_error_log')
+    .from('error_log')
     .select('id', { count: 'exact' })
     .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString());
 
