@@ -921,7 +921,7 @@ export async function checkAllAchievements(userId: string): Promise<Achievement[
 
   // Get user stats
   const { data: stats } = await supabase
-    .from('bv_user_stats')
+    .from('cv_user_stats')
     .select('*')
     .eq('user_id', userId)
     .single();
