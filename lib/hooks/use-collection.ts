@@ -95,7 +95,7 @@ export function useCollection(userId?: string) {
 
     try {
       const { data, error } = await supabase
-        .from('bv_user_collection')
+        .from('bv_user_collections')
         .select(`
           *,
           spirit:bv_spirits(*)
@@ -180,7 +180,7 @@ export function useCollection(userId?: string) {
 
     try {
       const { data, error } = await supabase
-        .from('bv_user_collection')
+        .from('bv_user_collections')
         .insert({
           user_id: userId,
           spirit_id: spiritId,
@@ -248,7 +248,7 @@ export function useCollection(userId?: string) {
       if (updates.tradeValue !== undefined) dbUpdates.trade_value = updates.tradeValue
 
       const { data, error } = await supabase
-        .from('bv_user_collection')
+        .from('bv_user_collections')
         .update(dbUpdates)
         .eq('id', itemId)
         .eq('user_id', userId)
@@ -285,7 +285,7 @@ export function useCollection(userId?: string) {
 
     try {
       const { error } = await supabase
-        .from('bv_user_collection')
+        .from('bv_user_collections')
         .delete()
         .eq('id', itemId)
         .eq('user_id', userId)
