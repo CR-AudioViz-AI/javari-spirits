@@ -336,13 +336,13 @@ Return JSON:
     const article = JSON.parse(response.choices[0].message.content || '{}');
 
     const { data: existing } = await getSupabase()
-      .from('bv_history_articles')
+      .from('cv_history_articles')
       .select('id')
       .eq('slug', article.slug)
       .single();
 
     if (!existing && article.title) {
-      await getSupabase().from('bv_history_articles').insert({
+      await getSupabase().from('cv_history_articles').insert({
         ...article,
         category,
         author: 'BarrelVerse History Team',
@@ -609,7 +609,7 @@ Return JSON:
 
       if (newCourse && course.lessons) {
         for (const lesson of course.lessons) {
-          await getSupabase().from('bv_lessons').insert({
+          await getSupabase().from('lessons').insert({
             course_id: newCourse.id,
             ...lesson,
           });
