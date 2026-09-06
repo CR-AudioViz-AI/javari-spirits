@@ -47,6 +47,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           display: 'flex', flexDirection: 'column', minHeight: '100vh',
         }}
       >
+        {/* 2026-09-10: WCAG 2.4.1. Without this a keyboard user traverses the
+            entire navigation on every page before reaching anything. Visually
+            hidden until focused, which is the point - it is for people who are
+            not using a mouse, and it appears the moment they tab. */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:outline focus:outline-2"
+        >
+          Skip to main content
+        </a>
+
         <SiteHeader />
         <main style={{ flex: 1 }}>{children}</main>
         <SiteFooter />
