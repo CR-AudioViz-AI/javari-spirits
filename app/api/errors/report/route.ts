@@ -108,7 +108,7 @@ ${errorInfo?.componentStack?.substring(0, 500) || 'N/A'}
 
     // Log to error log
     await supabase
-      .from('bv_error_log')
+      .from('error_log')
       .insert({
         ticket_id: ticket.id,
         user_id: userId || null,
