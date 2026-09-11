@@ -54,6 +54,10 @@ function cleanUrl(): void {
  *          'signed-out' when there is no session anywhere and none is coming.
  */
 export async function attemptSso(): Promise<'signed-in' | 'redirecting' | 'signed-out'> {
+  // factory: embedded on craudiovizai.com the platform supplies the session through the
+  // embed bridge; bouncing from here would navigate the FRAME to craudiovizai.com.
+  if (typeof window !== 'undefined' && window.self !== window.top) return 'signed-out'
+
   const params = new URLSearchParams(window.location.search)
 
   // Coming back with a code: spend it.
